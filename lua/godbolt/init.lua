@@ -2,7 +2,6 @@ local curl = require("plenary.curl")
 
 local M = {}
 
-M.bufnr = nil
 function M.languages()
   local endpoint = "/api/languages"
   local url = "https://godbolt.org" .. endpoint
@@ -28,6 +27,7 @@ function M.choose_lang()
   vim.ui.select(langs, { prompt = "Select language", }, function(choice) M.lang = choice end)
   print(M.lang)
 end
+
 function M.compilers(lang)
   local endpoint
   if lang then
@@ -73,13 +73,16 @@ end
 -- end
 
 -- TODO
-function M.compile()
-  local endpoint = "/api/compiler/g82/compile"
+function M.compile(compiler)
+  -- vim.fn.expand('%:e'))
+  local endpoint = string.format("/api/compiler/%s/compile", compiler)
   local url = "https://godbolt.org" .. endpoint
+
+  local buf_contents = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+  local source = table.concat(buf_contents, "\n")
   local body = {
-    source = "int square(int num) {\n return num * 3;\n}",
-    compiler = "g121",
-    lang = "c++",
+    source = source,
+    compiler = compiler,
     allowStoreCodeDebug = true,
     options = {
       filters = {},
@@ -100,6 +103,7 @@ function M.compile()
   if resp.status ~= 200 then
     error("bad request")
   end
+
   local out = vim.fn.json_decode(resp.body)
   local asm_lines = {}
   for _, line in ipairs(out.asm) do
@@ -119,6 +123,7 @@ function M.compile()
     local win = vim.api.nvim_get_current_win()
     vim.api.nvim_win_set_buf(win, buf)
 
+    -- TODO: Do we need this?
     vim.api.nvim_buf_set_lines(buf, 0, 0, false, {})
     vim.api.nvim_buf_set_lines(buf, 0, 0, false, asm_lines)
   else
@@ -126,7 +131,8 @@ function M.compile()
   end
 end
 
-M.compile()
+-- M.choose_lang()
+-- M.compile("g121")
 -- M.libraries("c++")
 -- M.compilers("go")
 -- vim.ui.input({ prompt = 'Enter value for shiftwidth: ' }, function(input)
