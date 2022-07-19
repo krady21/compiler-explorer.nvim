@@ -13,6 +13,21 @@ function M.languages()
   vim.pretty_print(contents)
 end
 
+function M.choose_lang()
+  local endpoint = "/api/languages"
+  local url = "https://godbolt.org" .. endpoint
+  local resp = curl.get(url, {
+    accept = "application/json",
+  })
+  local content = vim.fn.json_decode(resp.body)
+  local langs = {}
+  for _, lang in ipairs(content) do
+    table.insert(langs, lang.id)
+  end
+
+  vim.ui.select(langs, { prompt = "Select language", }, function(choice) M.lang = choice end)
+  print(M.lang)
+end
 function M.compilers(lang)
   local endpoint
   if lang then
