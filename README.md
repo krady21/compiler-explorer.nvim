@@ -1,13 +1,27 @@
 # godbolt.nvim
-Neovim lua plugin for interacting with compiler-explorer
+Neovim lua plugin for interacting with [compiler-explorer](https://godbolt.org/)
 
 ## TODO
-- [ ] `lua require("godbolt").choose\_lang()`
-- [ ] `lua require("godbolt").choose\_compiler()`
-- [ ] `lua require("godbolt").compile()`
-- [ ] `lua require("godbolt").format()`
+### Api Coverage:
+- [x] GET /api/languages
+- [x] GET /api/compilers/<lang-id>
+- [x] GET /api/libraries/<lang-id>
+- [ ] GET /api/shortlinkinfo/<link-id>
+- [x] POST /api/compiler/<compiler-id>/compile
+- [ ] GET /api/formats
+- [ ] POST /api/format/<formatter>
 
-- [ ] Compiler args support for compile()
-- [ ] Libraries support for compile()
-- [ ] Integrate with telescope
-- [ ] Integrate with fzf
+### Various features
+- [x] Infer language based on file extension.
+- [ ] Allow compiling parts of a file through visual selection
+- [ ] Allow using a local instance of compiler-explorer
+- [ ] Lines and cursor position tracking between source code and assembly
+- [ ] Autocmd that compiles on save/buffer change
+- [ ] Multi file output (useful for comparing two compilers or optimization flags)
+
+### Commands
+- Compile
+- CompileWithSettings
+- CESettings
+
+
