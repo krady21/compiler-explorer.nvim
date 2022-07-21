@@ -1,38 +1,9 @@
-local curl = require("plenary.curl")
+local rest = require("godbolt.rest")
 
 local M = {}
-function M.languages()
-  local url = M.get_endpoint("languages")
-  local resp = curl.get(url, {
-    accept = "application/json",
-  })
-  local langs = vim.fn.json_decode(resp.body)
-  return langs
-end
-
-function M.get_endpoint(resource, id)
-  -- TODO: Add configuration in case of local instance of compiler explorer.
-  local url = "https://godbolt.org/api"
-  if resource == "languages" or resource == "formats" then
-    url = string.format("%s/%s", url, resource)
-  elseif resource == "compilers" or resource == "format" or resource == "shortlinkinfo" then
-    url = string.format("%s/%s/%s", url, resource, id)
-  elseif resource == "compiler" then
-    url = string.format("%s/%s/%s/compile", url, resource, id)
-  end
-  return url
-end
 
 function M.choose_compiler(lang_id)
-  local url = M.get_endpoint("compilers", lang_id)
-  local resp = curl.get(url, {
-    accept = "application/json",
-  })
-  if resp.status ~= 200 then
-    error("bad request")
-  end
-  local compilers = vim.fn.json_decode(resp.body)
-
+  local compilers = rest.compilers(lang_id)
   vim.ui.select(compilers, {
     prompt = "Select compiler",
     format_item = function(compiler)
@@ -44,39 +15,6 @@ function M.choose_compiler(lang_id)
   return M.compiler_id
 end
 
-function M.compilers(lang)
-  local url = M.get_endpoint("compilers", lang)
-  local resp = curl.get(url, {
-    accept = "application/json",
-  })
-  if resp.status ~= 200 then
-    error("bad request")
-  end
-
-  local compilers = vim.fn.json_decode(resp.body)
-  vim.pretty_print(compilers)
-end
-
-function M.libraries(lang)
-  local endpoint
-  if lang then
-    endpoint = "/api/libraries/" .. lang
-  else
-    endpoint = "/api/libraries"
-  end
-
-  local url = "https://godbolt.org" .. endpoint
-  local resp = curl.get(url, {
-    accept = "application/json",
-  })
-  if resp.status ~= 200 then
-    error("bad request")
-  end
-
-  local libs = vim.fn.json_decode(resp.body)
-  vim.pretty_print(libs)
-end
-
 -- TODO
 -- function M.shortlinkinfo(link)
 -- end
@@ -85,7 +23,7 @@ function M.infer_language(extension)
   local extension_map = {}
 
   -- TODO: Memoize this
-  local lang_list = M.languages()
+  local lang_list = rest.languages_get()
   for _, lang in ipairs(lang_list) do
     for _, ext in ipairs(lang.extensions) do
       if extension_map[ext] == nil then
@@ -94,7 +32,6 @@ function M.infer_language(extension)
       table.insert(extension_map[ext], {id = lang.id, name = lang.name})
     end
   end
-
 
   -- Make the user choose the language in case the extension is related to more
   -- than one language.
@@ -125,9 +62,6 @@ function M.compile(compiler_id)
     compiler_id = M.choose_compiler(lang_id)
   end
 
-  local url = M.get_endpoint("compiler", compiler_id)
-  print(url)
-
   local body = {
     source = source,
     compiler = compiler_id,
@@ -141,18 +75,7 @@ function M.compile(compiler_id)
     },
   }
 
-  local resp = curl.post(url, {
-    body = vim.fn.json_encode(body),
-    headers = {
-      content_type = "application/json",
-      accept = "application/json",
-    },
-  })
-  if resp.status ~= 200 then
-    error("bad request")
-  end
-
-  local out = vim.fn.json_decode(resp.body)
+  local out = rest.compile_post(compiler_id, body)
   local asm_lines = {}
   for _, line in ipairs(out.asm) do
     table.insert(asm_lines, line.text)
