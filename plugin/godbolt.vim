@@ -16,7 +16,7 @@ end, { nargs = 0 })
 vim.api.nvim_create_user_command("CECompile", function(opts) 
   local compiler = opts.args
   require("godbolt").compile(compiler)
-end, { nargs = 1 })
+end, { nargs = "?" })
 EOF
 
 if exists('g:loaded_godbolt')
