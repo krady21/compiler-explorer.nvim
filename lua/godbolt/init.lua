@@ -28,6 +28,10 @@ function M.compile(compiler_id)
       end
     end
 
+    if extension_map[extension] == nil then
+      vim.notify(string.format("File type not supported by compiler-explorer", extension), vim.log.levels.ERROR)
+      return
+    end
     -- Make the user choose the language in case the extension is related to more
     -- than one language.
     vim.ui.select(extension_map[extension], {
