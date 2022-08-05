@@ -52,30 +52,32 @@ function M.compile(compiler_id)
           return compiler.name
         end,
       }, vim.schedule_wrap(function(compiler)
-        local body = rest.create_compile_body(source, compiler.id)
-        local out = rest.compile_post(compiler.id, body)
-        local asm_lines = {}
-        for _, line in ipairs(out.asm) do
-          table.insert(asm_lines, line.text)
-        end
+        vim.ui.input({ prompt = "Compiler options> "}, function(compiler_opts)
+            local body = rest.create_compile_body(source, compiler_opts, compiler.id)
+            local out = rest.compile_post(compiler.id, body)
+            local asm_lines = {}
+            for _, line in ipairs(out.asm) do
+                table.insert(asm_lines, line.text)
+            end
 
-        local name = "asm"
-        local buf = vim.fn.bufnr(name)
-        if buf == -1 then
-          buf = vim.api.nvim_create_buf(false, true)
-          vim.api.nvim_buf_set_name(buf, name)
-          vim.api.nvim_buf_set_option(buf, "ft", "asm")
-        end
+            local name = "asm"
+            local buf = vim.fn.bufnr(name)
+            if buf == -1 then
+                buf = vim.api.nvim_create_buf(false, true)
+                vim.api.nvim_buf_set_name(buf, name)
+                vim.api.nvim_buf_set_option(buf, "ft", "asm")
+            end
 
-        if vim.fn.bufwinnr(buf) == -1 then
-          vim.cmd("vsplit")
-          local win = vim.api.nvim_get_current_win()
-          vim.api.nvim_win_set_buf(win, buf)
+            if vim.fn.bufwinnr(buf) == -1 then
+                vim.cmd("vsplit")
+                local win = vim.api.nvim_get_current_win()
+                vim.api.nvim_win_set_buf(win, buf)
 
-          -- TODO: Do we need this?
-          vim.api.nvim_buf_set_lines(buf, 0, -1, false, {})
-          vim.api.nvim_buf_set_lines(buf, 0, -1, false, asm_lines)
-        end
+                -- TODO: Do we need this?
+                vim.api.nvim_buf_set_lines(buf, 0, -1, false, {})
+                vim.api.nvim_buf_set_lines(buf, 0, -1, false, asm_lines)
+            end
+        end)
       end))
     end))
   end

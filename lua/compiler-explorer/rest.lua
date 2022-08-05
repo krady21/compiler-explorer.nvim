@@ -46,7 +46,7 @@ function M.libraries_get(lang)
 end
 
 
-function M.create_compile_body(source, compiler_id)
+function M.create_compile_body(source, compiler_opts, compiler_id)
   vim.validate {
     source = {source, "string"},
     compiler_id = {compiler_id, "string"}
@@ -61,7 +61,7 @@ function M.create_compile_body(source, compiler_id)
       libraries = {},
       tools = {},
       compilerOptions = {},
-      userArguments = "",
+      userArguments = compiler_opts,
     },
   }
 
