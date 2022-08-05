@@ -1,5 +1,5 @@
 local curl = require("plenary.curl")
-local config = require("godbolt.config")
+local config = require("compiler-explorer.config")
 
 local M = {}
 

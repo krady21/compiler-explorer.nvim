@@ -1,5 +1,5 @@
-local rest = require("godbolt.rest")
-local config = require("godbolt.config")
+local rest = require("compiler-explorer.rest")
+local config = require("compiler-explorer.config")
 
 local M = {}
 
