@@ -1,10 +1,14 @@
 local rest = require("godbolt.rest")
+local config = require("godbolt.config")
 
 local M = {}
 
 -- TODO
 -- function M.shortlinkinfo(link)
 -- end
+function M.setup(user_config)
+  config.setup(user_config or {})
+end
 
 function M.compile(compiler_id)
   -- Get contents of current buffer
