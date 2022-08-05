@@ -2,7 +2,7 @@ local curl = require("plenary.curl")
 
 local function get_endpoint(resource, id)
   -- TODO: Add configuration in case of local instance of compiler explorer.
-  local url = "https://godbolt.org/api"
+  -- local url = "https://godbolt.org/api"
   if resource == "languages" or resource == "formats" then
     url = string.format("%s/%s", url, resource)
   elseif resource == "compilers" or resource == "format" or resource == "shortlinkinfo" then
@@ -25,7 +25,7 @@ function M.languages_get()
 end
 
 function M.compilers_get(lang)
-  local url = M.get_endpoint("compilers", lang)
+  local url = get_endpoint("compilers", lang)
   local resp = curl.get(url, {
     accept = "application/json",
   })
@@ -52,7 +52,7 @@ end
 
 
 function M.compile_post(compiler_id, body)
-  local url = M.get_endpoint("compiler", compiler_id)
+  local url = get_endpoint("compiler", compiler_id)
 
   local resp = curl.post(url, {
     body = vim.fn.json_encode(body),

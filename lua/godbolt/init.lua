@@ -2,50 +2,9 @@ local rest = require("godbolt.rest")
 
 local M = {}
 
-function M.choose_compiler(lang_id)
-  local compilers = rest.compilers(lang_id)
-  vim.ui.select(compilers, {
-    prompt = "Select compiler",
-    format_item = function(compiler)
-      return compiler.name
-    end,
-  }, function(compiler)
-    M.compiler_id = compiler.id
-  end)
-  return M.compiler_id
-end
-
 -- TODO
 -- function M.shortlinkinfo(link)
 -- end
-
-function M.infer_language(extension)
-  local extension_map = {}
-
-  -- TODO: Memoize this
-  local lang_list = rest.languages_get()
-  for _, lang in ipairs(lang_list) do
-    for _, ext in ipairs(lang.extensions) do
-      if extension_map[ext] == nil then
-        extension_map[ext] = {}
-      end
-      table.insert(extension_map[ext], {id = lang.id, name = lang.name})
-    end
-  end
-
-  -- Make the user choose the language in case the extension is related to more
-  -- than one language.
-  vim.ui.select(extension_map[extension], {
-    prompt = "Select language",
-    format_item = function(lang)
-      return lang.name
-    end,
-  }, function(lang)
-    M.chosen_lang_id = lang.id
-  end)
-
-  return M.chosen_lang_id
-end
 
 function M.compile(compiler_id)
   -- Get contents of current buffer
@@ -56,47 +15,73 @@ function M.compile(compiler_id)
   if compiler_id == nil or compiler_id == "" then
     -- Infer language based on extension and prompt user.
     local extension = "." .. vim.fn.expand("%:e")
-    local lang_id = M.infer_language(extension)
+    local extension_map = {}
 
-    -- Prompt user for compiler choice
-    compiler_id = M.choose_compiler(lang_id)
-  end
+    -- TODO: Memoize this
+    local lang_list = rest.languages_get()
+    for _, lang in ipairs(lang_list) do
+      for _, ext in ipairs(lang.extensions) do
+        if extension_map[ext] == nil then
+          extension_map[ext] = {}
+        end
+        table.insert(extension_map[ext], {id = lang.id, name = lang.name})
+      end
+    end
 
-  local body = {
-    source = source,
-    compiler = compiler_id,
-    allowStoreCodeDebug = true,
-    options = {
-      filters = {},
-      libraries = {},
-      tools = {},
-      compilerOptions = {},
-      userArguments = "",
-    },
-  }
+    -- Make the user choose the language in case the extension is related to more
+    -- than one language.
+    vim.ui.select(extension_map[extension], {
+      prompt = "Select language",
+      format_item = function(lang)
+        return lang.name
+      end,
+    }, vim.schedule_wrap(function(lang)
 
-  local out = rest.compile_post(compiler_id, body)
-  local asm_lines = {}
-  for _, line in ipairs(out.asm) do
-    table.insert(asm_lines, line.text)
-  end
+      local compilers = rest.compilers_get(lang.id)
+      vim.ui.select(compilers, {
+        prompt = "Select compiler",
+        format_item = function(compiler)
+          return compiler.name
+        end,
+      }, vim.schedule_wrap(function(compiler)
+        local body = {
+          source = source,
+          compiler = compiler_id,
+          allowStoreCodeDebug = true,
+          options = {
+            filters = {},
+            libraries = {},
+            tools = {},
+            compilerOptions = {},
+            userArguments = "",
+          },
+        }
 
-  local name = "asm"
-  local buf = vim.fn.bufnr(name)
-  if buf == -1 then
-    buf = vim.api.nvim_create_buf(false, true)
-    vim.api.nvim_buf_set_name(buf, name)
-    vim.api.nvim_buf_set_option(buf, "ft", "asm")
-  end
+        local out = rest.compile_post(compiler.id, body)
+        local asm_lines = {}
+        for _, line in ipairs(out.asm) do
+          table.insert(asm_lines, line.text)
+        end
 
-  if vim.fn.bufwinnr(buf) == -1 then
-    vim.cmd("vsplit")
-    local win = vim.api.nvim_get_current_win()
-    vim.api.nvim_win_set_buf(win, buf)
+        local name = "asm"
+        local buf = vim.fn.bufnr(name)
+        if buf == -1 then
+          buf = vim.api.nvim_create_buf(false, true)
+          vim.api.nvim_buf_set_name(buf, name)
+          vim.api.nvim_buf_set_option(buf, "ft", "asm")
+        end
 
-    -- TODO: Do we need this?
-    vim.api.nvim_buf_set_lines(buf, 0, 0, false, {})
-    vim.api.nvim_buf_set_lines(buf, 0, 0, false, asm_lines)
+        if vim.fn.bufwinnr(buf) == -1 then
+          vim.cmd("vsplit")
+          local win = vim.api.nvim_get_current_win()
+          vim.api.nvim_win_set_buf(win, buf)
+
+          -- TODO: Do we need this?
+          vim.api.nvim_buf_set_lines(buf, 0, 0, false, {})
+          vim.api.nvim_buf_set_lines(buf, 0, 0, false, asm_lines)
+        end
+      end))
+    end))
   end
 end
 
