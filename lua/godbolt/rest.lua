@@ -1,22 +1,13 @@
 local curl = require("plenary.curl")
-
-local function get_endpoint(resource, id)
-  -- TODO: Add configuration in case of local instance of compiler explorer.
-  -- local url = "https://godbolt.org/api"
-  if resource == "languages" or resource == "formats" then
-    url = string.format("%s/%s", url, resource)
-  elseif resource == "compilers" or resource == "format" or resource == "shortlinkinfo" then
-    url = string.format("%s/%s/%s", url, resource, id)
-  elseif resource == "compiler" then
-    url = string.format("%s/%s/%s/compile", url, resource, id)
-  end
-  return url
-end
+local config = require("godbolt.config")
 
 local M = {}
 
 function M.languages_get()
-  local url = get_endpoint("languages")
+  local conf = config.get_config()
+  local url = string.format("%s/api/languages", conf.url)
+  print(url)
+
   local resp = curl.get(url, {
     accept = "application/json",
   })
@@ -25,7 +16,9 @@ function M.languages_get()
 end
 
 function M.compilers_get(lang)
-  local url = get_endpoint("compilers", lang)
+  local conf = config.get_config()
+  local url = string.format("%s/api/compilers/%s", conf.url, lang)
+
   local resp = curl.get(url, {
     accept = "application/json",
   })
@@ -38,7 +31,9 @@ function M.compilers_get(lang)
 end
 
 function M.libraries_get(lang)
-  local url = get_endpoint("libraries", lang)
+  local conf = config.get_config()
+  local url = string.format("%s/api/libraries/%s", conf.url, lang)
+
   local resp = curl.get(url, {
     accept = "application/json",
   })
@@ -51,8 +46,31 @@ function M.libraries_get(lang)
 end
 
 
+function M.create_compile_body(source, compiler_id)
+  vim.validate {
+    source = {source, "string"},
+    compiler_id = {compiler_id, "string"}
+  }
+
+  local body = {
+    source = source,
+    compiler = compiler_id,
+    allowStoreCodeDebug = true,
+    options = {
+      filters = {},
+      libraries = {},
+      tools = {},
+      compilerOptions = {},
+      userArguments = "",
+    },
+  }
+
+  return body
+end
+
 function M.compile_post(compiler_id, body)
-  local url = get_endpoint("compiler", compiler_id)
+  local conf = config.get_config()
+  local url = string.format("%s/api/compiler/%s/compile", conf.url, compiler_id)
 
   local resp = curl.post(url, {
     body = vim.fn.json_encode(body),
@@ -68,4 +86,5 @@ function M.compile_post(compiler_id, body)
   local out = vim.fn.json_decode(resp.body)
   return out
 end
+
 return M

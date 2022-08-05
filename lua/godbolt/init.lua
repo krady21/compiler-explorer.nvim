@@ -39,7 +39,7 @@ function M.compile(compiler_id)
     -- Make the user choose the language in case the extension is related to more
     -- than one language.
     vim.ui.select(extension_map[extension], {
-      prompt = "Select language",
+      prompt = "Select language> ",
       format_item = function(lang)
         return lang.name
       end,
@@ -47,24 +47,12 @@ function M.compile(compiler_id)
 
       local compilers = rest.compilers_get(lang.id)
       vim.ui.select(compilers, {
-        prompt = "Select compiler",
+        prompt = "Select compiler> ",
         format_item = function(compiler)
           return compiler.name
         end,
       }, vim.schedule_wrap(function(compiler)
-        local body = {
-          source = source,
-          compiler = compiler_id,
-          allowStoreCodeDebug = true,
-          options = {
-            filters = {},
-            libraries = {},
-            tools = {},
-            compilerOptions = {},
-            userArguments = "",
-          },
-        }
-
+        local body = rest.create_compile_body(source, compiler.id)
         local out = rest.compile_post(compiler.id, body)
         local asm_lines = {}
         for _, line in ipairs(out.asm) do
@@ -85,15 +73,17 @@ function M.compile(compiler_id)
           vim.api.nvim_win_set_buf(win, buf)
 
           -- TODO: Do we need this?
-          vim.api.nvim_buf_set_lines(buf, 0, 0, false, {})
-          vim.api.nvim_buf_set_lines(buf, 0, 0, false, asm_lines)
+          vim.api.nvim_buf_set_lines(buf, 0, -1, false, {})
+          vim.api.nvim_buf_set_lines(buf, 0, -1, false, asm_lines)
         end
       end))
     end))
   end
 end
 
--- vim.pretty_print(M.infer_language(".asm"))
+-- vim.pretty_print(rest.compilers_get("ocaml"))
+-- vim.pretty_print(rest.languages_get())
+-- vim.pretty_print(rest.create_compile_body("int a = 3;", "c"))
 -- M.languages()
 -- M.choose_compiler()
 -- M.choose_lang()
