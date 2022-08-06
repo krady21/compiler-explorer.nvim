@@ -1,7 +1,7 @@
 local M = {}
 
 M.defaults = {
-  url = "https://godbolt.org"
+  url = "https://godbolt.org",
 }
 M._config = M.defaults
 

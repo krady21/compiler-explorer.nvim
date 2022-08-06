@@ -28,7 +28,7 @@ function M.compile(compiler_id)
         if extension_map[ext] == nil then
           extension_map[ext] = {}
         end
-        table.insert(extension_map[ext], {id = lang.id, name = lang.name})
+        table.insert(extension_map[ext], { id = lang.id, name = lang.name })
       end
     end
 
@@ -38,37 +38,42 @@ function M.compile(compiler_id)
     end
     -- Make the user choose the language in case the extension is related to more
     -- than one language.
-    vim.ui.select(extension_map[extension], {
-      prompt = "Select language> ",
-      format_item = function(lang)
-        return lang.name
-      end,
-    }, vim.schedule_wrap(function(lang)
-
-      local compilers = rest.compilers_get(lang.id)
-      vim.ui.select(compilers, {
-        prompt = "Select compiler> ",
-        format_item = function(compiler)
-          return compiler.name
+    vim.ui.select(
+      extension_map[extension],
+      {
+        prompt = "Select language> ",
+        format_item = function(lang)
+          return lang.name
         end,
-      }, vim.schedule_wrap(function(compiler)
-        vim.ui.input({ prompt = "Compiler options> "}, function(compiler_opts)
-            local body = rest.create_compile_body(source, compiler_opts, compiler.id)
-            local out = rest.compile_post(compiler.id, body)
-            local asm_lines = {}
-            for _, line in ipairs(out.asm) do
+      },
+      vim.schedule_wrap(function(lang)
+        local compilers = rest.compilers_get(lang.id)
+        vim.ui.select(
+          compilers,
+          {
+            prompt = "Select compiler> ",
+            format_item = function(compiler)
+              return compiler.name
+            end,
+          },
+          vim.schedule_wrap(function(compiler)
+            vim.ui.input({ prompt = "Compiler options> " }, function(compiler_opts)
+              local body = rest.create_compile_body(source, compiler_opts, compiler.id)
+              local out = rest.compile_post(compiler.id, body)
+              local asm_lines = {}
+              for _, line in ipairs(out.asm) do
                 table.insert(asm_lines, line.text)
-            end
+              end
 
-            local name = "asm"
-            local buf = vim.fn.bufnr(name)
-            if buf == -1 then
+              local name = "asm"
+              local buf = vim.fn.bufnr(name)
+              if buf == -1 then
                 buf = vim.api.nvim_create_buf(false, true)
                 vim.api.nvim_buf_set_name(buf, name)
                 vim.api.nvim_buf_set_option(buf, "ft", "asm")
-            end
+              end
 
-            if vim.fn.bufwinnr(buf) == -1 then
+              if vim.fn.bufwinnr(buf) == -1 then
                 vim.cmd("vsplit")
                 local win = vim.api.nvim_get_current_win()
                 vim.api.nvim_win_set_buf(win, buf)
@@ -76,10 +81,12 @@ function M.compile(compiler_id)
                 -- TODO: Do we need this?
                 vim.api.nvim_buf_set_lines(buf, 0, -1, false, {})
                 vim.api.nvim_buf_set_lines(buf, 0, -1, false, asm_lines)
-            end
-        end)
-      end))
-    end))
+              end
+            end)
+          end)
+        )
+      end)
+    )
   end
 end
 

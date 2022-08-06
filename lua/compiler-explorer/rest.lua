@@ -45,12 +45,11 @@ function M.libraries_get(lang)
   return libs
 end
 
-
 function M.create_compile_body(source, compiler_opts, compiler_id)
-  vim.validate {
-    source = {source, "string"},
-    compiler_id = {compiler_id, "string"}
-  }
+  vim.validate({
+    source = { source, "string" },
+    compiler_id = { compiler_id, "string" },
+  })
 
   local body = {
     source = source,
