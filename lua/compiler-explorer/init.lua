@@ -1,6 +1,8 @@
 local rest = require("compiler-explorer.rest")
 local config = require("compiler-explorer.config")
 
+local api, fn, cmd = vim.api, vim.fn, vim.cmd
+
 local M = {}
 
 -- TODO
@@ -12,13 +14,13 @@ end
 
 function M.compile(compiler_id)
   -- Get contents of current buffer
-  local buf_contents = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+  local buf_contents = api.nvim_buf_get_lines(0, 0, -1, false)
   local source = table.concat(buf_contents, "\n")
 
   -- If compiler id is not specified try to smartly prompt user.
   if compiler_id == nil or compiler_id == "" then
     -- Infer language based on extension and prompt user.
-    local extension = "." .. vim.fn.expand("%:e")
+    local extension = "." .. fn.expand("%:e")
     local extension_map = {}
 
     -- TODO: Memoize this
@@ -66,21 +68,21 @@ function M.compile(compiler_id)
               end
 
               local name = "asm"
-              local buf = vim.fn.bufnr(name)
+              local buf = fn.bufnr(name)
               if buf == -1 then
-                buf = vim.api.nvim_create_buf(false, true)
-                vim.api.nvim_buf_set_name(buf, name)
-                vim.api.nvim_buf_set_option(buf, "ft", "asm")
+                buf = api.nvim_create_buf(false, true)
+                api.nvim_buf_set_name(buf, name)
+                api.nvim_buf_set_option(buf, "ft", "asm")
               end
 
-              if vim.fn.bufwinnr(buf) == -1 then
-                vim.cmd("vsplit")
-                local win = vim.api.nvim_get_current_win()
-                vim.api.nvim_win_set_buf(win, buf)
+              if fn.bufwinnr(buf) == -1 then
+                cmd("vsplit")
+                local win = api.nvim_get_current_win()
+                api.nvim_win_set_buf(win, buf)
 
                 -- TODO: Do we need this?
-                vim.api.nvim_buf_set_lines(buf, 0, -1, false, {})
-                vim.api.nvim_buf_set_lines(buf, 0, -1, false, asm_lines)
+                api.nvim_buf_set_lines(buf, 0, -1, false, {})
+                api.nvim_buf_set_lines(buf, 0, -1, false, asm_lines)
               end
             end)
           end)
