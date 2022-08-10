@@ -8,7 +8,6 @@ local M = {}
 function M.languages_get()
   local conf = config.get_config()
   local url = string.format("%s/api/languages", conf.url)
-  print(url)
 
   local resp = curl.get(url, {
     accept = "application/json",

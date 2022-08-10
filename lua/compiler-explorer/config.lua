@@ -2,7 +2,21 @@ local M = {}
 
 M.defaults = {
   url = "https://godbolt.org",
+  format_item = {
+    lang = function(item)
+      return item.name
+    end,
+    compiler = function(item)
+      return item.name
+    end,
+  },
+  prompt = {
+    lang = "Select language> ",
+    compiler = "Select compiler> ",
+    compiler_opts = "Select compiler options> ",
+  },
 }
+
 M._config = M.defaults
 
 function M.setup(user_config)
