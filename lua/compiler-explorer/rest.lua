@@ -7,7 +7,7 @@ local M = {}
 
 function M.languages_get()
   local conf = config.get_config()
-  local url = string.format("%s/api/languages", conf.url)
+  local url = table.concat({conf.url, "api", "languages"}, "/")
 
   local resp = curl.get(url, {
     accept = "application/json",
@@ -18,7 +18,7 @@ end
 
 function M.compilers_get(lang)
   local conf = config.get_config()
-  local url = string.format("%s/api/compilers/%s", conf.url, lang)
+  local url = table.concat({conf.url, "api", "compilers", lang}, "/")
 
   local resp = curl.get(url, {
     accept = "application/json",
@@ -33,7 +33,7 @@ end
 
 function M.libraries_get(lang)
   local conf = config.get_config()
-  local url = string.format("%s/api/libraries/%s", conf.url, lang)
+  local url = table.concat({conf.url, "api", "libraries", lang}, "/")
 
   local resp = curl.get(url, {
     accept = "application/json",
@@ -70,7 +70,7 @@ end
 
 function M.compile_post(compiler_id, body)
   local conf = config.get_config()
-  local url = string.format("%s/api/compiler/%s/compile", conf.url, compiler_id)
+  local url = table.concat({conf.url, "api", "compiler", compiler_id, "compile"}, "/")
 
   local resp = curl.post(url, {
     body = json.encode(body),
