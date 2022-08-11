@@ -15,8 +15,7 @@ vim.api.nvim_create_user_command("CEListCompilers", function(opts)
   require("compiler-explorer").compilers(lang) 
 end, { nargs = "?" })
 vim.api.nvim_create_user_command("CECompile", function(opts) 
-  local compiler = opts.args
-  require("compiler-explorer").compile(compiler)
+  require("compiler-explorer").compile()
 end, { nargs = "?" })
 EOF
 
