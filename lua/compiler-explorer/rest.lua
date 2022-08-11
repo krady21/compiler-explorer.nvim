@@ -1,7 +1,7 @@
 local curl = require("plenary.curl")
 local config = require("compiler-explorer.config")
 
-local fn = vim.fn
+local json = vim.json
 
 local M = {}
 
@@ -12,7 +12,7 @@ function M.languages_get()
   local resp = curl.get(url, {
     accept = "application/json",
   })
-  local langs = fn.json_decode(resp.body)
+  local langs = json.decode(resp.body)
   return langs
 end
 
@@ -27,7 +27,7 @@ function M.compilers_get(lang)
     error("bad request")
   end
 
-  local compilers = fn.json_decode(resp.body)
+  local compilers = json.decode(resp.body)
   return compilers
 end
 
@@ -42,7 +42,7 @@ function M.libraries_get(lang)
     error("bad request")
   end
 
-  local libs = fn.json_decode(resp.body)
+  local libs = json.decode(resp.body)
   return libs
 end
 
@@ -73,7 +73,7 @@ function M.compile_post(compiler_id, body)
   local url = string.format("%s/api/compiler/%s/compile", conf.url, compiler_id)
 
   local resp = curl.post(url, {
-    body = fn.json_encode(body),
+    body = json.encode(body),
     headers = {
       content_type = "application/json",
       accept = "application/json",
@@ -83,7 +83,7 @@ function M.compile_post(compiler_id, body)
     error("bad request")
   end
 
-  local out = fn.json_decode(resp.body)
+  local out = json.decode(resp.body)
   return out
 end
 
