@@ -4,10 +4,10 @@ M.defaults = {
   url = "https://godbolt.org",
   format_item = {
     lang = function(item)
-      return item.name
+      return item.name -- Other possible fields: extensions, id, monaco
     end,
     compiler = function(item)
-      return item.name
+      return item.name -- Other possible fields: compilerType, id, instructionSet, lang, semver
     end,
   },
   prompt = {

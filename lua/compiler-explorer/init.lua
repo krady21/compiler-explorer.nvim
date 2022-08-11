@@ -55,6 +55,7 @@ M.compile = void(function()
     format_item = conf.format_item.compiler,
   })
 
+  -- Choose compiler options
   local compiler_opts = M.input({ prompt = conf.prompt.compiler_opts })
 
   -- Compile
