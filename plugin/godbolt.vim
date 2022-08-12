@@ -17,6 +17,9 @@ end, { nargs = "?" })
 vim.api.nvim_create_user_command("CECompile", function(opts) 
   require("compiler-explorer").compile()
 end, { nargs = "?" })
+vim.api.nvim_create_user_command("CEFormat", function(opts) 
+  require("compiler-explorer").format()
+end, { nargs = "?" })
 EOF
 
 if exists('g:loaded_compiler_explorer')

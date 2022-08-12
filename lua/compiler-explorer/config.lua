@@ -2,6 +2,13 @@ local M = {}
 
 M.defaults = {
   url = "https://godbolt.org",
+  prompt = {
+    lang = "Select language> ",
+    compiler = "Select compiler> ",
+    compiler_opts = "Select compiler options> ",
+    formatter = "Select formatter> ",
+    formatter_style = "Select formatter style> ",
+  },
   format_item = {
     lang = function(item)
       return item.name -- Other possible fields: extensions, id, monaco
@@ -9,11 +16,12 @@ M.defaults = {
     compiler = function(item)
       return item.name -- Other possible fields: compilerType, id, instructionSet, lang, semver
     end,
-  },
-  prompt = {
-    lang = "Select language> ",
-    compiler = "Select compiler> ",
-    compiler_opts = "Select compiler options> ",
+    formatter = function(item)
+      return item.name -- Other possible fields: exe, styles, type, version
+    end,
+    formatter_style = function(item)
+      return item
+    end,
   },
 }
 
