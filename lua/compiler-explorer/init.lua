@@ -1,8 +1,6 @@
-local rest = require("compiler-explorer.rest")
+local async = require("compiler-explorer.async")
 local config = require("compiler-explorer.config")
-local awrap = require("compiler-explorer.async").wrap
-local void = require("compiler-explorer.async").void
-local scheduler = require("compiler-explorer.async").scheduler
+local rest = require("compiler-explorer.rest")
 
 local api, fn, cmd = vim.api, vim.fn, vim.cmd
 
@@ -18,14 +16,14 @@ local custom_select = function(items, opts, cb)
   vim.ui.select(items, opts, cb)
 end
 
-M.select = awrap(vim.ui.select, 3)
-M.input = awrap(vim.ui.input, 2)
+M.select = async.wrap(vim.ui.select, 3)
+M.input = async.wrap(vim.ui.input, 2)
 
 function M.setup(user_config)
   config.setup(user_config or {})
 end
 
-M.compile = void(function()
+M.compile = async.void(function()
   local conf = config.get_config()
 
   -- Get contents of current buffer
@@ -93,7 +91,7 @@ M.compile = void(function()
   api.nvim_buf_set_lines(buf, 0, -1, false, asm_lines)
 end)
 
-M.format = void(function()
+M.format = async.void(function()
   local conf = config.get_config()
 
   -- Get contents of current buffer
@@ -108,27 +106,25 @@ M.format = void(function()
   })
 
   local style = formatter.styles[1] or "__DefaultStyle"
-  -- if formatter.styles ~= {} then
-  --    style = M.select(formatter.styles, {
-  --     prompt = conf.prompt.formatter_style,
-  --     format_item = conf.format_item.formatter_style,
-  --   })
-  -- end
+  -- async.scheduler()
+  if #formatter.styles > 0 then
+    style = M.select(formatter.styles, {
+      prompt = conf.prompt.formatter_style,
+      format_item = conf.format_item.formatter_style,
+    })
+  end
 
   local body = rest.create_format_body(formatter.type, source, style)
   local out = rest.format_post(formatter.type, body)
 
   -- Split by newlines
-  local lines = {}
-  for line in string.gmatch(out.answer, "([^\n]*)\n?") do
-    table.insert(lines, line)
-  end
+  local lines = vim.split(out.answer, "\n")
 
   -- Replace lines of the current buffer with formatted text
   api.nvim_buf_set_lines(0, 0, -1, false, lines)
 
   -- TODO: Find how to make the text appear at the proper time.
-  scheduler()
+  async.scheduler()
   vim.notify(string.format("Text formatted using %s and style %s", formatter.name, style))
 end)
 

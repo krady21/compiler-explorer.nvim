@@ -62,7 +62,7 @@ end
 
 function M.format_post(formatter_id, body)
   local conf = config.get_config()
-  local url = table.concat({ conf.url, "api", "format", formatter_id}, "/")
+  local url = table.concat({ conf.url, "api", "format", formatter_id }, "/")
 
   local resp = curl.post(url, {
     body = json.encode(body),
