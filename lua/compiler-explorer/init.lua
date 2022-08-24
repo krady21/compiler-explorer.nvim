@@ -23,17 +23,42 @@ function M.setup(user_config)
   config.setup(user_config or {})
 end
 
-local function create_autocmd(source_bufnr, asm_bufnr, dict)
-  local ns = vim.api.nvim_create_namespace("CompilerExplorer")
+local function create_linehl_dict(asm)
+  local source_to_asm, asm_to_source = {}, {}
+  local prev_dict = {}
+  for asm_idx, line_obj in ipairs(asm) do
+    if line_obj.source ~= vim.NIL then
+      if line_obj.source.line ~= vim.NIL then
+        local source_idx = line_obj.source.line
+        if source_to_asm[source_idx] == nil then
+          source_to_asm[source_idx] = {}
+        end
+
+        table.insert(source_to_asm[source_idx], asm_idx)
+        asm_to_source[asm_idx] = source_idx
+      end
+    end
+  end
+
+  -- { 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 22, 23 }
+  return source_to_asm, asm_to_source
+end
+
+local function create_autocmd(source_bufnr, asm_bufnr, resp)
+  local source_to_asm_hl, asm_to_source = create_linehl_dict(resp)
+  local gid = api.nvim_create_augroup("CompilerExplorer", { clear = true })
+  local ns = api.nvim_create_namespace("CompilerExplorer")
+  local ns2 = api.nvim_create_namespace("Comp")
+
   api.nvim_create_autocmd({ "CursorMoved" }, {
-    group = api.nvim_create_augroup("CompilerExplorer", { clear = true }),
+    group = gid,
     buffer = source_bufnr,
     callback = function()
       -- clear previous highlights
       api.nvim_buf_clear_namespace(asm_bufnr, ns, 0, -1)
 
       local line_nr = fn.line(".")
-      local hl_ranges = dict[line_nr]
+      local hl_ranges = source_to_asm_hl[line_nr]
       if hl_ranges == nil then
         return
       end
@@ -41,26 +66,39 @@ local function create_autocmd(source_bufnr, asm_bufnr, dict)
       vim.highlight.range(asm_bufnr, ns, "Visual", { hl_ranges[1], 0 }, { hl_ranges[#hl_ranges], 0 }, "linewise", true)
     end,
   })
-end
 
-local function create_linehl_dict(asm)
-  local dict = {}
-  local prev_dict = {}
-  for asm_idx, line_obj in ipairs(asm) do
-    if line_obj.source ~= vim.NIL then
-      if line_obj.source.line ~= vim.NIL then
-        local source_idx = line_obj.source.line
-        if dict[source_idx] == nil then
-          dict[source_idx] = {}
-        end
+  api.nvim_create_autocmd({ "BufLeave" }, {
+    group = gid,
+    buffer = source_bufnr,
+    callback = function()
+      api.nvim_buf_clear_namespace(asm_bufnr, ns, 0, -1)
+    end,
+  })
 
-        table.insert(dict[source_idx], asm_idx)
+  api.nvim_create_autocmd({ "CursorMoved" }, {
+    group = gid,
+    buffer = asm_bufnr,
+    callback = function()
+      -- clear previous highlights
+      api.nvim_buf_clear_namespace(source_bufnr, ns2, 0, -1)
+
+      local line_nr = fn.line(".")
+      local hl_ranges = asm_to_source[line_nr]
+      if hl_ranges == nil then
+        return
       end
-    end
-  end
 
-  -- { 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 22, 23 }
-  return dict
+      vim.highlight.range(source_bufnr, ns2, "Visual", { hl_ranges, 0 }, { hl_ranges + 1, 0 }, "linewise", true)
+    end,
+  })
+
+  api.nvim_create_autocmd({ "BufLeave" }, {
+    group = gid,
+    buffer = asm_bufnr,
+    callback = function()
+      api.nvim_buf_clear_namespace(source_bufnr, ns2, 0, -1)
+    end,
+  })
 end
 
 M.compile = async.void(function()
@@ -133,11 +171,12 @@ M.compile = async.void(function()
 
   api.nvim_buf_set_lines(asm_bufnr, 0, -1, false, asm_lines)
   vim.notify(string.format("Compilation done %s", compiler.name))
+  -- vim.pretty_print(out.asm)
 
-  local source_to_asm_hl = create_linehl_dict(out.asm)
+  -- local source_to_asm_hl = create_linehl_dict(out.asm)
   -- vim.pretty_print(source_to_asm_hl)
 
-  create_autocmd(source_bufnr, asm_bufnr, source_to_asm_hl)
+  create_autocmd(source_bufnr, asm_bufnr, out.asm)
 end)
 
 M.format = async.void(function()
