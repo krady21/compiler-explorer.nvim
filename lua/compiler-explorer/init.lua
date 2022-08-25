@@ -45,7 +45,9 @@ local function create_linehl_dict(asm)
 end
 
 local function create_autocmd(source_bufnr, asm_bufnr, resp)
-  local source_to_asm_hl, asm_to_source = create_linehl_dict(resp)
+  local source_to_asm, asm_to_source = create_linehl_dict(resp)
+
+  vim.pretty_print(asm_to_source)
   local gid = api.nvim_create_augroup("CompilerExplorer", { clear = true })
   local ns = api.nvim_create_namespace("CompilerExplorer")
   local ns2 = api.nvim_create_namespace("Comp")
@@ -58,12 +60,20 @@ local function create_autocmd(source_bufnr, asm_bufnr, resp)
       api.nvim_buf_clear_namespace(asm_bufnr, ns, 0, -1)
 
       local line_nr = fn.line(".")
-      local hl_ranges = source_to_asm_hl[line_nr]
+      local hl_ranges = source_to_asm[line_nr]
       if hl_ranges == nil then
         return
       end
 
-      vim.highlight.range(asm_bufnr, ns, "Visual", { hl_ranges[1], 0 }, { hl_ranges[#hl_ranges], 0 }, "linewise", true)
+      vim.highlight.range(
+        asm_bufnr,
+        ns,
+        "CursorLine",
+        { hl_ranges[1] - 1, 0 },
+        { hl_ranges[#hl_ranges] - 1, -1 },
+        "linewise",
+        true
+      )
     end,
   })
 
@@ -88,7 +98,15 @@ local function create_autocmd(source_bufnr, asm_bufnr, resp)
         return
       end
 
-      vim.highlight.range(source_bufnr, ns2, "Visual", { hl_ranges, 0 }, { hl_ranges + 1, 0 }, "linewise", true)
+      vim.highlight.range(
+        source_bufnr,
+        ns2,
+        "CursorLine",
+        { hl_ranges - 1, 0 },
+        { hl_ranges - 1, -1 },
+        "linewise",
+        true
+      )
     end,
   })
 
