@@ -2,6 +2,10 @@ local M = {}
 
 M.defaults = {
   url = "https://godbolt.org",
+  autocmd = {
+    enable = true,
+    hl = "Cursorline",
+  },
   prompt = {
     lang = "Select language> ",
     compiler = "Select compiler> ",

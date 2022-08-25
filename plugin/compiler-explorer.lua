@@ -9,9 +9,10 @@ if vim.g.loaded_compiler_explorer == 1 then
 end
 vim.g.loaded_compiler_explorer = 1
 
-command("CECompile", function(_)
-  require("compiler-explorer").compile()
-end, {})
+command("CECompile", function(opts)
+  print(opts.line1, opts.line2)
+  require("compiler-explorer").compile(opts.line1, opts.line2)
+end, { range = "%" })
 command("CEFormat", function(_)
   require("compiler-explorer").format()
 end, {})

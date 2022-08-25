@@ -45,9 +45,9 @@ local function create_linehl_dict(asm)
 end
 
 local function create_autocmd(source_bufnr, asm_bufnr, resp)
+  local conf = config.get_config()
   local source_to_asm, asm_to_source = create_linehl_dict(resp)
 
-  vim.pretty_print(asm_to_source)
   local gid = api.nvim_create_augroup("CompilerExplorer", { clear = true })
   local ns = api.nvim_create_namespace("CompilerExplorer")
   local ns2 = api.nvim_create_namespace("Comp")
@@ -68,7 +68,7 @@ local function create_autocmd(source_bufnr, asm_bufnr, resp)
       vim.highlight.range(
         asm_bufnr,
         ns,
-        "CursorLine",
+        conf.autocmd.hl,
         { hl_ranges[1] - 1, 0 },
         { hl_ranges[#hl_ranges] - 1, -1 },
         "linewise",
@@ -101,7 +101,7 @@ local function create_autocmd(source_bufnr, asm_bufnr, resp)
       vim.highlight.range(
         source_bufnr,
         ns2,
-        "CursorLine",
+        conf.autocmd.hl,
         { hl_ranges - 1, 0 },
         { hl_ranges - 1, -1 },
         "linewise",
@@ -119,14 +119,14 @@ local function create_autocmd(source_bufnr, asm_bufnr, resp)
   })
 end
 
-M.compile = async.void(function()
+M.compile = async.void(function(start, finish)
   local conf = config.get_config()
 
   -- Get buffer number of the source code buffer
   local source_bufnr = fn.bufnr("%")
 
   -- Get contents of current buffer
-  local buf_contents = api.nvim_buf_get_lines(0, 0, -1, false)
+  local buf_contents = api.nvim_buf_get_lines(source_bufnr, start - 1, finish, false)
   local source = table.concat(buf_contents, "\n")
 
   -- Infer language based on extension and prompt user.
@@ -189,12 +189,14 @@ M.compile = async.void(function()
 
   api.nvim_buf_set_lines(asm_bufnr, 0, -1, false, asm_lines)
   vim.notify(string.format("Compilation done %s", compiler.name))
-  -- vim.pretty_print(out.asm)
 
-  -- local source_to_asm_hl = create_linehl_dict(out.asm)
-  -- vim.pretty_print(source_to_asm_hl)
+  local is_full_buffer = function(start, finish)
+    return (start == 1) and (finish == fn.line("$"))
+  end
 
-  create_autocmd(source_bufnr, asm_bufnr, out.asm)
+  if conf.autocmd.enable and is_full_buffer(start, finish) then
+    create_autocmd(source_bufnr, asm_bufnr, out.asm)
+  end
 end)
 
 M.format = async.void(function()
@@ -232,5 +234,5 @@ M.format = async.void(function()
   vim.notify(string.format("Text formatted using %s and style %s", formatter.name, style))
 end)
 
--- vim.pretty_print(rest.languages_get())
+-- vim.pretty_print(rest.compilers_get("c++"))
 return M
