@@ -64,15 +64,9 @@ local function create_autocmd(source_bufnr, asm_bufnr, resp)
         return
       end
 
-      vim.highlight.range(
-        asm_bufnr,
-        ns,
-        conf.autocmd.hl,
-        { hl_ranges[1] - 1, 0 },
-        { hl_ranges[#hl_ranges] - 1, -1 },
-        "linewise",
-        true
-      )
+      for _, hl in ipairs(hl_ranges) do
+        vim.highlight.range(asm_bufnr, ns, conf.autocmd.hl, { hl - 1, 0 }, { hl - 1, -1 }, "linewise", true)
+      end
     end,
   })
 
@@ -130,8 +124,9 @@ end
 M.compile = async.void(function(start, finish)
   local conf = config.get_config()
 
+  local last_line = fn.line("$")
   local is_full_buffer = function(first, last)
-    return (first == 1) and (last == fn.line("$"))
+    return (first == 1) and (last == last_line)
   end
 
   -- Get buffer number of the source code buffer.
@@ -154,7 +149,7 @@ M.compile = async.void(function(start, finish)
     end, lang_list)
 
     if vim.tbl_isempty(possible_langs) then
-      vim.notify(string.format("File type not supported by compiler-explorer", extension), vim.log.levels.ERROR)
+      vim.notify(("File type %s not supported by compiler-explorer"):format(extension), vim.log.levels.ERROR)
       return
     end
   end
@@ -204,6 +199,7 @@ M.compile = async.void(function(start, finish)
   if conf.autocmd.enable and is_full_buffer(start, finish) then
     create_autocmd(source_bufnr, asm_bufnr, out.asm)
   end
+  vim.pretty_print(out.stderr)
 end)
 
 M.format = async.void(function()
@@ -238,10 +234,7 @@ M.format = async.void(function()
   api.nvim_buf_set_lines(0, 0, -1, false, lines)
 
   -- TODO: Find how to make the text appear at the proper time.
-  vim.notify(string.format("Text formatted using %s and style %s", formatter.name, style))
+  vim.notify(("Text formatted using %s and style %s"):format(formatter.name, style))
 end)
 
--- vim.pretty_print(rest.languages_get())
--- vim.pretty_print(rest.compilers_get("c++"))
--- vim.pretty_print(rest.tooltip_get("amd64", "ret"))
 return M
