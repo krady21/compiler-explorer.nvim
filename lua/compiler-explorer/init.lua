@@ -25,7 +25,6 @@ end
 
 local function create_linehl_dict(asm)
   local source_to_asm, asm_to_source = {}, {}
-  local prev_dict = {}
   for asm_idx, line_obj in ipairs(asm) do
     if line_obj.source ~= vim.NIL then
       if line_obj.source.line ~= vim.NIL then
@@ -131,35 +130,37 @@ end
 M.compile = async.void(function(start, finish)
   local conf = config.get_config()
 
-  -- Get buffer number of the source code buffer
+  local is_full_buffer = function(first, last)
+    return (first == 1) and (last == fn.line("$"))
+  end
+
+  -- Get buffer number of the source code buffer.
   local source_bufnr = fn.bufnr("%")
 
-  -- Get contents of current buffer
+  -- Get contents of the selected lines.
   local buf_contents = api.nvim_buf_get_lines(source_bufnr, start - 1, finish, false)
   local source = table.concat(buf_contents, "\n")
 
-  -- Infer language based on extension and prompt user.
-  local extension = "." .. fn.expand("%:e")
-  local extension_map = {}
-
-  -- TODO: Memoize this
   local lang_list = rest.languages_get()
-  for _, lang in ipairs(lang_list) do
-    for _, ext in ipairs(lang.extensions) do
-      if extension_map[ext] == nil then
-        extension_map[ext] = {}
-      end
-      table.insert(extension_map[ext], { id = lang.id, name = lang.name })
+  local possible_langs = lang_list
+
+  -- Do not infer language when compiling only a visual selection.
+  if is_full_buffer(start, finish) then
+    -- Infer language based on extension and prompt user.
+    local extension = "." .. fn.expand("%:e")
+
+    possible_langs = vim.tbl_filter(function(el)
+      return vim.tbl_contains(el.extensions, extension)
+    end, lang_list)
+
+    if vim.tbl_isempty(possible_langs) then
+      vim.notify(string.format("File type not supported by compiler-explorer", extension), vim.log.levels.ERROR)
+      return
     end
   end
 
-  if extension_map[extension] == nil then
-    vim.notify(string.format("File type not supported by compiler-explorer", extension), vim.log.levels.ERROR)
-    return
-  end
-
   -- Choose language
-  local lang = M.select(extension_map[extension], {
+  local lang = M.select(possible_langs, {
     prompt = conf.prompt.lang,
     format_item = conf.format_item.lang,
   })
@@ -198,10 +199,6 @@ M.compile = async.void(function(start, finish)
 
   api.nvim_buf_set_lines(asm_bufnr, 0, -1, false, asm_lines)
   vim.notify(string.format("Compilation done %s", compiler.name))
-
-  local is_full_buffer = function(start, finish)
-    return (start == 1) and (finish == fn.line("$"))
-  end
 
   vim.b[asm_bufnr].arch = compiler.instructionSet
   if conf.autocmd.enable and is_full_buffer(start, finish) then
@@ -244,6 +241,7 @@ M.format = async.void(function()
   vim.notify(string.format("Text formatted using %s and style %s", formatter.name, style))
 end)
 
+-- vim.pretty_print(rest.languages_get())
 -- vim.pretty_print(rest.compilers_get("c++"))
 -- vim.pretty_print(rest.tooltip_get("amd64", "ret"))
 return M
