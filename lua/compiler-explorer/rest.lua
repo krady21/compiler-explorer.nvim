@@ -31,6 +31,21 @@ function M.libraries_get(lang)
   return libs
 end
 
+function M.tooltip_get(arch, instruction)
+  local conf = config.get_config()
+  local url = table.concat({ conf.url, "api", "asm", arch, instruction }, "/")
+
+  local resp = curl.get(url, {
+    accept = "application/json",
+  })
+  if resp.status ~= 200 then
+    error("bad request")
+  end
+
+  local doc = json.decode(resp.body)
+  return doc
+end
+
 function M.formatters_get()
   local conf = config.get_config()
   local url = table.concat({ conf.url, "api", "formats" }, "/")

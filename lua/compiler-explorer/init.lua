@@ -119,6 +119,15 @@ local function create_autocmd(source_bufnr, asm_bufnr, resp)
   })
 end
 
+M.show_tooltip = function()
+  local doc = rest.tooltip_get(vim.b.arch, fn.expand("<cword>"))
+  vim.lsp.util.open_floating_preview({ doc.tooltip }, "markdown", {
+    wrap = true,
+    close_events = { "CursorMoved" },
+    border = "single",
+  })
+end
+
 M.compile = async.void(function(start, finish)
   local conf = config.get_config()
 
@@ -194,6 +203,7 @@ M.compile = async.void(function(start, finish)
     return (start == 1) and (finish == fn.line("$"))
   end
 
+  vim.b[asm_bufnr].arch = compiler.instructionSet
   if conf.autocmd.enable and is_full_buffer(start, finish) then
     create_autocmd(source_bufnr, asm_bufnr, out.asm)
   end
@@ -235,4 +245,5 @@ M.format = async.void(function()
 end)
 
 -- vim.pretty_print(rest.compilers_get("c++"))
+-- vim.pretty_print(rest.tooltip_get("amd64", "ret"))
 return M
