@@ -96,15 +96,16 @@ M.compile = async.void(function(start, finish)
   end
 
   api.nvim_buf_set_lines(asm_bufnr, 0, -1, false, asm_lines)
-  async.scheduler()
   vim.notify(string.format("Compilation done %s", compiler.name))
 
   vim.b[asm_bufnr].arch = compiler.instructionSet
-  if conf.autocmd.enable and is_full_buffer(start, finish) then
-    autocmd.create_autocmd(source_bufnr, asm_bufnr, out.asm)
-  end
 
-  stderr.parse_errors(out.stderr, source_bufnr)
+  if is_full_buffer(start, finish) then
+    stderr.parse_errors(out.stderr, source_bufnr)
+    if conf.autocmd.enable then
+      autocmd.create_autocmd(source_bufnr, asm_bufnr, out.asm)
+    end
+  end
 end)
 
 M.format = async.void(function()
