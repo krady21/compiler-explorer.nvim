@@ -2,6 +2,7 @@ local M = {}
 
 M.defaults = {
   url = "https://godbolt.org",
+  open_qflist = false,
   autocmd = {
     enable = true,
     hl = "Cursorline",
