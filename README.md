@@ -1,27 +1,64 @@
-# godbolt.nvim
-Neovim lua plugin for interacting with [compiler-explorer](https://godbolt.org/)
+# compiler-explorer.nvim
 
-## TODO
-### Api Coverage:
-- [x] GET /api/languages
-- [x] GET /api/compilers/<lang-id>
-- [x] GET /api/libraries/<lang-id>
-- [ ] GET /api/shortlinkinfo/<link-id>
-- [x] POST /api/compiler/<compiler-id>/compile
-- [ ] GET /api/formats
-- [ ] POST /api/format/<formatter>
+Neovim lua plugin used for interacting with
+[compiler-explorer](https://godbolt.org/) and supercharged by `vim.ui.select`,
+`vim.ui.input`, `vim.notify` and `vim.diagnostic`.
 
-### Various features
-- [x] Infer language based on file extension.
-- [ ] Allow compiling parts of a file through visual selection
-- [ ] Allow using a local instance of compiler-explorer
-- [ ] Lines and cursor position tracking between source code and assembly
-- [ ] Autocmd that compiles on save/buffer change
-- [ ] Multi file output (useful for comparing two compilers or optimization flags)
+## Requirements
+- [Neovim](https://neovim.io/) >= 0.6
+- [plenary.nvim](https://github.com/nvim-lua/plenary.nvim/) for the curl module
+- [curl](https://curl.se/)
 
-### Commands
-- Compile
-- CompileWithSettings
-- CESettings
+## Installation
 
+<details>
+<summary>packer</summary>
+
+```lua
+require('packer').startup(function()
+  use {
+    'krady21/compiler-explorer.nvim', requires = { 'nvim-lua/plenary.nvim' }
+  }
+end
+```
+</details>
+
+<details>
+<summary>paq</summary>
+
+```lua
+require("paq") {
+  {'krady21/compiler-explorer.nvim'};
+  {'nvim-lua/plenary.nvim'};
+}
+```
+
+</details>
+
+<details>
+<summary>vim-plug</summary>
+
+```vim
+Plug 'krady21/compiler-explorer.nvim'
+Plug 'nvim-lua/plenary.nvim'
+```
+
+</details>
+
+## Commands
+- CECompile
+- CEFormat
+- CETooltip
+
+## API Coverage:
+- [x] `GET  /api/languages`
+- [x] `GET  /api/compilers/<lang-id>`
+- [x] `GET  /api/libraries/<lang-id>`
+- [ ] `GET  /api/shortlinkinfo/<link-id>`
+- [x] `POST /api/compiler/<compiler-id>/compile`
+- [x] `GET  /api/formats`
+- [x] `POST /api/format/<formatter>`
+- [x] `GET  /api/asm/<instruction-set>/<instruction>`
+- [ ] `GET  /source/builtin/list`
+- [ ] `GET  /source/builtin/load/<lang-id>/<example-id>`
 
