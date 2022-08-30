@@ -8,6 +8,8 @@ local api, fn, cmd = vim.api, vim.fn, vim.cmd
 
 local M = {}
 
+local notify_title = "Compiler Explorer"
+
 local vim_select = async.wrap(vim.ui.select, 3)
 local vim_input = async.wrap(vim.ui.input, 2)
 
@@ -95,9 +97,11 @@ M.compile = async.void(function(start, finish)
     api.nvim_win_set_buf(win, asm_bufnr)
   end
 
+  vim.bo[asm_bufnr].modifiable = true
   api.nvim_buf_set_lines(asm_bufnr, 0, -1, false, asm_lines)
-  vim.notify(string.format("Compilation done %s", compiler.name))
+  vim.notify(string.format("Compilation done with %s compiler.", compiler.name))
 
+  vim.bo[asm_bufnr].modifiable = false
   vim.b[asm_bufnr].arch = compiler.instructionSet
 
   if is_full_buffer(start, finish) then
