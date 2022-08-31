@@ -116,13 +116,18 @@ function M.create_compile_body(compiler_id, compiler_opts, source)
     compiler_id = { compiler_id, "string" },
   })
 
+  local libs = {}
+  for id, version in pairs(vim.b.libs or {}) do
+    table.insert(libs, { id = id, version = version })
+  end
+
   return {
     source = source,
     compiler = compiler_id,
     allowStoreCodeDebug = true,
     options = {
       filters = {},
-      libraries = {},
+      libraries = libs,
       tools = {},
       compilerOptions = {},
       userArguments = compiler_opts,

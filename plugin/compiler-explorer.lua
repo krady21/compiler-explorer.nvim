@@ -20,3 +20,7 @@ end, {})
 command("CETooltip", function(_)
   require("compiler-explorer").show_tooltip()
 end, {})
+
+command("CELibrary", function(_)
+  require("compiler-explorer").add_library()
+end, {})

@@ -13,6 +13,8 @@ M.defaults = {
     compiler_opts = "Select compiler options> ",
     formatter = "Select formatter> ",
     formatter_style = "Select formatter style> ",
+    lib = "Select library> ",
+    lib_version = "Select library version> ",
   },
   format_item = {
     lang = function(item)
@@ -20,6 +22,12 @@ M.defaults = {
     end,
     compiler = function(item)
       return item.name -- Other possible fields: compilerType, id, instructionSet, lang, semver
+    end,
+    lib = function(item)
+      return item.name
+    end,
+    lib_version = function(item)
+      return item.version
     end,
     formatter = function(item)
       return item.name -- Other possible fields: exe, styles, type, version

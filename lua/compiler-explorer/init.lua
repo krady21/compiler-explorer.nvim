@@ -5,11 +5,9 @@ local rest = require("compiler-explorer.rest")
 local stderr = require("compiler-explorer.stderr")
 local alert = require("compiler-explorer.alert")
 
-local api, fn, cmd = vim.api, vim.fn, vim.cmd
+local api, fn = vim.api, vim.fn
 
 local M = {}
-
-local notify_title = "Compiler Explorer"
 
 local vim_select = async.wrap(vim.ui.select, 3)
 local vim_input = async.wrap(vim.ui.input, 2)
@@ -98,7 +96,7 @@ M.compile = async.void(function(start, finish)
   end
 
   if fn.bufwinnr(asm_bufnr) == -1 then
-    cmd("vsplit")
+    vim.cmd("vsplit")
     local win = api.nvim_get_current_win()
     api.nvim_win_set_buf(win, asm_bufnr)
   end
@@ -106,6 +104,9 @@ M.compile = async.void(function(start, finish)
   vim.bo[asm_bufnr].modifiable = true
   api.nvim_buf_set_lines(asm_bufnr, 0, -1, false, asm_lines)
   alert.info("Compilation done with %s compiler.", compiler.name)
+
+  -- Return to previous window
+  vim.cmd("wincmd p")
 
   vim.bo[asm_bufnr].modifiable = false
   vim.b[asm_bufnr].arch = compiler.instructionSet
@@ -116,6 +117,49 @@ M.compile = async.void(function(start, finish)
       autocmd.create_autocmd(source_bufnr, asm_bufnr, out.asm)
     end
   end
+end)
+
+M.add_library = async.void(function()
+  local conf = config.get_config()
+
+  local lang_list = rest.languages_get()
+
+  -- Infer language based on extension and prompt user.
+  local extension = "." .. fn.expand("%:e")
+
+  local possible_langs = vim.tbl_filter(function(el)
+    return vim.tbl_contains(el.extensions, extension)
+  end, lang_list)
+
+  if vim.tbl_isempty(possible_langs) then
+    alert.error("File extension %s not supported by compiler-explorer", extension)
+    return
+  end
+
+  -- Choose language
+  local lang = vim_select(possible_langs, {
+    prompt = conf.prompt.lang,
+    format_item = conf.format_item.lang,
+  })
+
+  local libs = rest.libraries_get(lang.id)
+
+  -- Choose library
+  local lib = vim_select(libs, {
+    prompt = conf.prompt.lib,
+    format_item = conf.format_item.lib,
+  })
+
+  -- Choose language
+  local version = vim_select(lib.versions, {
+    prompt = conf.prompt.lib_version,
+    format_item = conf.format_item.lib_version,
+  })
+
+  -- Add lib to buffer variable, overwriting previous library version if already present
+  vim.b.libs = vim.tbl_deep_extend("force", vim.b.libs or {}, { [lib.id] = version.version })
+
+  alert.info("Added library %s version %s", lib.name, version.version)
 end)
 
 M.format = async.void(function()
@@ -153,4 +197,9 @@ M.format = async.void(function()
   alert.info("Text formatted using %s and style %s", formatter.name, style)
 end)
 
+-- vim.b.ceva = { a = 2, b = 3}
+-- local t = { a = 2, b = 4}
+-- vim.b.ceva = vim.tbl_deep_extend("force", vim.b.ceva, t)
+-- vim.pretty_print(vim.b.ceva)
+-- vim.pretty_print(rest.libraries_get("c++"))
 return M
