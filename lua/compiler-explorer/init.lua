@@ -3,6 +3,7 @@ local autocmd = require("compiler-explorer.autocmd")
 local config = require("compiler-explorer.config")
 local rest = require("compiler-explorer.rest")
 local stderr = require("compiler-explorer.stderr")
+local alert = require("compiler-explorer.alert")
 
 local api, fn, cmd = vim.api, vim.fn, vim.cmd
 
@@ -59,7 +60,7 @@ M.compile = async.void(function(start, finish)
     end, lang_list)
 
     if vim.tbl_isempty(possible_langs) then
-      vim.notify(("File type %s not supported by compiler-explorer"):format(extension), vim.log.levels.ERROR)
+      alert.error("File extension %s not supported by compiler-explorer", extension)
       return
     end
   end
@@ -104,7 +105,7 @@ M.compile = async.void(function(start, finish)
 
   vim.bo[asm_bufnr].modifiable = true
   api.nvim_buf_set_lines(asm_bufnr, 0, -1, false, asm_lines)
-  vim.notify(string.format("Compilation done with %s compiler.", compiler.name))
+  alert.info("Compilation done with %s compiler.", compiler.name)
 
   vim.bo[asm_bufnr].modifiable = false
   vim.b[asm_bufnr].arch = compiler.instructionSet
@@ -149,7 +150,7 @@ M.format = async.void(function()
   api.nvim_buf_set_lines(0, 0, -1, false, lines)
 
   -- TODO: Find how to make the text appear at the proper time.
-  vim.notify(("Text formatted using %s and style %s"):format(formatter.name, style))
+  alert.info("Text formatted using %s and style %s", formatter.name, style)
 end)
 
 return M
