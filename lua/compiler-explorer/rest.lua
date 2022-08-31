@@ -38,12 +38,13 @@ function M.tooltip_get(arch, instruction)
   local resp = curl.get(url, {
     accept = "application/json",
   })
+
+  local decoded = json.decode(resp.body)
   if resp.status ~= 200 then
-    error("bad request")
+    error({ code = resp.status, msg = decoded.error })
   end
 
-  local doc = json.decode(resp.body)
-  return doc
+  return decoded
 end
 
 function M.formatters_get()

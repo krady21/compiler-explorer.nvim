@@ -18,8 +18,13 @@ M.setup = function(user_config)
 end
 
 M.show_tooltip = function()
-  local doc = rest.tooltip_get(vim.b.arch, fn.expand("<cword>"))
-  vim.lsp.util.open_floating_preview({ doc.tooltip }, "markdown", {
+  local ok, response = pcall(rest.tooltip_get, vim.b.arch, fn.expand("<cword>"))
+  if not ok then
+    alert.error(response.msg)
+    return
+  end
+
+  vim.lsp.util.open_floating_preview({ response.tooltip }, "markdown", {
     wrap = true,
     close_events = { "CursorMoved" },
     border = "single",
