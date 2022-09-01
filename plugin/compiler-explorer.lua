@@ -17,10 +17,10 @@ command("CEFormat", function(_)
   require("compiler-explorer").format()
 end, {})
 
-command("CETooltip", function(_)
+command("CEShowTooltip", function(_)
   require("compiler-explorer").show_tooltip()
 end, {})
 
-command("CELibrary", function(_)
+command("CEAddLibrary", function(_)
   require("compiler-explorer").add_library()
 end, {})

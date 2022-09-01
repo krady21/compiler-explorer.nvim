@@ -1,19 +1,23 @@
 # compiler-explorer.nvim
 
 Neovim lua plugin used for interacting with
-[compiler-explorer](https://godbolt.org/) and supercharged by `vim.ui.select`,
-`vim.ui.input`, `vim.notify` and `vim.diagnostic`.
+[compiler-explorer](https://godbolt.org/) and supercharged by `vim.ui`,
+`vim.notify` and `vim.diagnostic`.
 
-## Requirements
-- [Neovim](https://neovim.io/) >= 0.6
+## Demo 
+
+## Dependencies
+- [Neovim](https://neovim.io/) >= 0.7
 - [plenary.nvim](https://github.com/nvim-lua/plenary.nvim/) for the curl module
 - [curl](https://curl.se/)
 
+## Optional dependencies
+- [dressing.nvim](https://github.com/stevearc/dressing.nvim) or another plugin that overrides `vim.ui`
+- [nvim-notify](https://github.com/rcarriga/nvim-notify) or another plugin that overrides `vim.notify`
+
 ## Installation
 
-<details>
-<summary>packer</summary>
-
+- [packer](https://github.com/wbthomason/packer.nvim)
 ```lua
 require('packer').startup(function()
   use {
@@ -21,11 +25,8 @@ require('packer').startup(function()
   }
 end
 ```
-</details>
 
-<details>
-<summary>paq</summary>
-
+- [paq](https://github.com/savq/paq-nvim)
 ```lua
 require("paq") {
   {'krady21/compiler-explorer.nvim'};
@@ -33,22 +34,32 @@ require("paq") {
 }
 ```
 
-</details>
-
-<details>
-<summary>vim-plug</summary>
-
+- [vim-plug](https://github.com/junegunn/vim-plug)
 ```vim
 Plug 'krady21/compiler-explorer.nvim'
 Plug 'nvim-lua/plenary.nvim'
 ```
 
-</details>
+## Configuration
+compiler-explorer.nvim works out of the box without configuration.
+If you want to change some of its options, you can do so through the `setup()` function.
+You can find all the options [here](https://github.com/krady21/compiler-explorer.nvim/blob/7f03a00ab31d1f7de684679cf42d11e035c5f21e/lua/compiler-explorer/config.lua#L3).
+```lua
+require("compiler-explorer").setup({
+  url = "http://localhost:10240",
+  open_qflist = true,
+  autocmd = {
+    enable = true,
+    hl = "Search",
+  }
+})
+```
 
 ## Commands
 - CECompile
 - CEFormat
-- CETooltip
+- CEAddLibrary
+- CEShowTooltip
 
 ## API Coverage:
 - [x] `GET  /api/languages`

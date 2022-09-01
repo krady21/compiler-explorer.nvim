@@ -226,9 +226,4 @@ M.format = async.void(function()
   alert.info("Text formatted using %s and style %s", formatter.name, style)
 end)
 
--- vim.b.ceva = { a = 2, b = 3}
--- local t = { a = 2, b = 4}
--- vim.b.ceva = vim.tbl_deep_extend("force", vim.b.ceva, t)
--- vim.pretty_print(vim.b.ceva)
--- vim.pretty_print(rest.libraries_get("c++"))
 return M
