@@ -69,12 +69,20 @@ M.compile = async.void(function(start, finish)
     format_item = conf.format_item.lang,
   })
 
+  if lang == nil or vim.tbl_isempty(lang) then
+    return
+  end
+
   -- Choose compiler
   local compilers = rest.compilers_get(lang.id)
   local compiler = vim_select(compilers, {
     prompt = conf.prompt.compiler,
     format_item = conf.format_item.compiler,
   })
+
+  if compiler == nil or vim.tbl_isempty(compiler) then
+    return
+  end
 
   -- Choose compiler options
   local compiler_opts = vim_input({ prompt = conf.prompt.compiler_opts })
@@ -109,6 +117,8 @@ M.compile = async.void(function(start, finish)
   vim.cmd("wincmd p")
 
   vim.bo[asm_bufnr].modifiable = false
+
+  -- Used by tooltips
   vim.b[asm_bufnr].arch = compiler.instructionSet
 
   if is_full_buffer(start, finish) then
@@ -142,6 +152,10 @@ M.add_library = async.void(function()
     format_item = conf.format_item.lang,
   })
 
+  if lang == nil or vim.tbl_isempty(lang) then
+    return
+  end
+
   local libs = rest.libraries_get(lang.id)
 
   -- Choose library
@@ -150,11 +164,19 @@ M.add_library = async.void(function()
     format_item = conf.format_item.lib,
   })
 
+  if lib == nil or vim.tbl_isempty(lib) then
+    return
+  end
+
   -- Choose language
   local version = vim_select(lib.versions, {
     prompt = conf.prompt.lib_version,
     format_item = conf.format_item.lib_version,
   })
+
+  if version == nil or vim.tbl_isempty(version) then
+    return
+  end
 
   -- Add lib to buffer variable, overwriting previous library version if already present
   vim.b.libs = vim.tbl_deep_extend("force", vim.b.libs or {}, { [lib.id] = version.version })
@@ -176,12 +198,20 @@ M.format = async.void(function()
     format_item = conf.format_item.formatter,
   })
 
+  if formatter == nil or vim.tbl_isempty(formatter) then
+    return
+  end
+
   local style = formatter.styles[1] or "__DefaultStyle"
   if #formatter.styles > 0 then
     style = vim_select(formatter.styles, {
       prompt = conf.prompt.formatter_style,
       format_item = conf.format_item.formatter_style,
     })
+
+    if style == nil then
+      return
+    end
   end
 
   local body = rest.create_format_body(formatter.type, source, style)
@@ -193,7 +223,6 @@ M.format = async.void(function()
   -- Replace lines of the current buffer with formatted text
   api.nvim_buf_set_lines(0, 0, -1, false, lines)
 
-  -- TODO: Find how to make the text appear at the proper time.
   alert.info("Text formatted using %s and style %s", formatter.name, style)
 end)
 
