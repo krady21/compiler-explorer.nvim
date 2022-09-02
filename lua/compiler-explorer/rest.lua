@@ -5,20 +5,39 @@ local json = vim.json
 
 local M = {}
 
+M.cache = {
+  langs = {},
+  compilers = {},
+  libs = {},
+  formatters = {},
+}
+
 function M.languages_get()
+  if not vim.tbl_isempty(M.cache.langs) then
+    return M.cache.langs
+  end
+
   local conf = config.get_config()
   local url = table.concat({ conf.url, "api", "languages" }, "/")
 
   local resp = curl.get(url, {
     accept = "application/json",
   })
-  local langs = json.decode(resp.body)
-  return langs
+
+  M.cache.langs = json.decode(resp.body)
+  return M.cache.langs
 end
 
 function M.libraries_get(lang)
+  if not vim.tbl_isempty(M.cache.libs) then
+    if lang then
+      return M.cache.libs[lang] or {}
+    end
+    return M.cache.libs
+  end
+
   local conf = config.get_config()
-  local url = table.concat({ conf.url, "api", "libraries", lang }, "/")
+  local url = table.concat({ conf.url, "api", "libraries" }, "/")
 
   local resp = curl.get(url, {
     accept = "application/json",
@@ -27,8 +46,11 @@ function M.libraries_get(lang)
     error("bad request")
   end
 
-  local libs = json.decode(resp.body)
-  return libs
+  M.cache.libs = json.decode(resp.body)
+  if lang then
+    return M.cache.libs[lang] or {}
+  end
+  return M.cache.libs
 end
 
 function M.tooltip_get(arch, instruction)
@@ -48,6 +70,9 @@ function M.tooltip_get(arch, instruction)
 end
 
 function M.formatters_get()
+  if not vim.tbl_isempty(M.cache.formatters) then
+    return M.cache.formatters
+  end
   local conf = config.get_config()
   local url = table.concat({ conf.url, "api", "formats" }, "/")
 
@@ -58,8 +83,8 @@ function M.formatters_get()
     error("bad request")
   end
 
-  local libs = json.decode(resp.body)
-  return libs
+  M.cache.formatters = json.decode(resp.body)
+  return M.cache.formatters
 end
 
 function M.create_format_body(formatter_id, source, style)
@@ -96,8 +121,17 @@ function M.format_post(formatter_id, body)
 end
 
 function M.compilers_get(lang)
+  if not vim.tbl_isempty(M.cache.compilers) then
+    if lang then
+      return vim.tbl_filter(function(el)
+        return el.lang == lang
+      end, M.cache.compilers)
+    end
+    return M.cache.compilers
+  end
+
   local conf = config.get_config()
-  local url = table.concat({ conf.url, "api", "compilers", lang }, "/")
+  local url = table.concat({ conf.url, "api", "compilers" }, "/")
 
   local resp = curl.get(url, {
     accept = "application/json",
@@ -106,8 +140,13 @@ function M.compilers_get(lang)
     error("bad request")
   end
 
-  local compilers = json.decode(resp.body)
-  return compilers
+  M.cache.compilers = json.decode(resp.body)
+  if lang then
+    return vim.tbl_filter(function(el)
+      return el.lang == lang
+    end, M.cache.compilers)
+  end
+  return M.cache.compilers
 end
 
 function M.create_compile_body(compiler_id, compiler_opts, source)

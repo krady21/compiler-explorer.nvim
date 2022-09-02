@@ -157,6 +157,9 @@ M.add_library = async.void(function()
   end
 
   local libs = rest.libraries_get(lang.id)
+  if vim.tbl_isempty(libs) then
+    alert.info("No libraries are available for %", lang.name)
+  end
 
   -- Choose library
   local lib = vim_select(libs, {
