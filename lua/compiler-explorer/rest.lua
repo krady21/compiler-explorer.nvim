@@ -29,15 +29,8 @@ function M.languages_get()
 end
 
 function M.libraries_get(lang)
-  if not vim.tbl_isempty(M.cache.libs) then
-    if lang then
-      return M.cache.libs[lang] or {}
-    end
-    return M.cache.libs
-  end
-
   local conf = config.get_config()
-  local url = table.concat({ conf.url, "api", "libraries" }, "/")
+  local url = table.concat({ conf.url, "api", "libraries", lang }, "/")
 
   local resp = curl.get(url, {
     accept = "application/json",
@@ -46,11 +39,8 @@ function M.libraries_get(lang)
     error("bad request")
   end
 
-  M.cache.libs = json.decode(resp.body)
-  if lang then
-    return M.cache.libs[lang] or {}
-  end
-  return M.cache.libs
+  local libs = json.decode(resp.body)
+  return libs
 end
 
 function M.tooltip_get(arch, instruction)
