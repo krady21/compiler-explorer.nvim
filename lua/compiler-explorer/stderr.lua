@@ -30,6 +30,11 @@ local function trim_msg_severity(err)
 end
 
 M.parse_errors = function(stderr, bufnr)
+  -- stderr can be vim.NIL (ex: for golang) which is of type userdata
+  if type(stderr) ~= "table" then
+    return
+  end
+
   local conf = config.get_config()
   local ns = api.nvim_create_namespace("ce-diagnostics")
   vim.diagnostic.config({ underline = false, virtual_text = false, signs = false }, ns)
