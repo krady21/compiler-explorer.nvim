@@ -4,7 +4,7 @@ M.defaults = {
   url = "https://godbolt.org",
   open_qflist = false,
   autocmd = {
-    enable = true,
+    enable = false,
     hl = "Cursorline",
   },
   prompt = {

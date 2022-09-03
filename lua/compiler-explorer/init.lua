@@ -63,14 +63,19 @@ M.compile = async.void(function(start, finish)
     end
   end
 
-  -- Choose language
-  local lang = vim_select(possible_langs, {
-    prompt = conf.prompt.lang,
-    format_item = conf.format_item.lang,
-  })
+  local lang
+  if #possible_langs == 1 then
+    lang = possible_langs[1]
+  else
+    -- Choose language
+    lang = vim_select(possible_langs, {
+      prompt = conf.prompt.lang,
+      format_item = conf.format_item.lang,
+    })
 
-  if lang == nil or vim.tbl_isempty(lang) then
-    return
+    if lang == nil or vim.tbl_isempty(lang) then
+      return
+    end
   end
 
   -- Choose compiler
@@ -152,14 +157,19 @@ M.add_library = async.void(function()
     return
   end
 
-  -- Choose language
-  local lang = vim_select(possible_langs, {
-    prompt = conf.prompt.lang,
-    format_item = conf.format_item.lang,
-  })
+  local lang
+  if #possible_langs == 1 then
+    lang = possible_langs[1]
+  else
+    -- Choose language
+    lang = vim_select(possible_langs, {
+      prompt = conf.prompt.lang,
+      format_item = conf.format_item.lang,
+    })
 
-  if lang == nil or vim.tbl_isempty(lang) then
-    return
+    if lang == nil or vim.tbl_isempty(lang) then
+      return
+    end
   end
 
   local libs = rest.libraries_get(lang.id)
