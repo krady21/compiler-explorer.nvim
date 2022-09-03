@@ -1,3 +1,4 @@
+-- Module was inspired from a similar module in gitsigns.nvim
 local M = {}
 
 local plugin_title = "compiler-explorer"

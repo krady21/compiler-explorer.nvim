@@ -1,3 +1,4 @@
+-- Module taken from gitsigns.nvim
 local co = coroutine
 
 local async_thread = {

@@ -5,6 +5,7 @@ Neovim lua plugin used for interacting with
 `vim.notify` and `vim.diagnostic`.
 
 ## Demo 
+![Preview](https://i.imgur.com/Dy7TnUd.gif)
 
 ## Dependencies
 - [Neovim](https://neovim.io/) >= 0.7
@@ -41,9 +42,11 @@ Plug 'nvim-lua/plenary.nvim'
 ```
 
 ## Configuration
-compiler-explorer.nvim works out of the box without configuration.
-If you want to change some of its options, you can do so through the `setup()` function.
-You can find all the options [here](https://github.com/krady21/compiler-explorer.nvim/blob/7f03a00ab31d1f7de684679cf42d11e035c5f21e/lua/compiler-explorer/config.lua#L3).
+[compiler-explorer.nvim](https://github.com/krady21/compiler-explorer.nvim)
+works out of the box without configuration. If you want to change some of its
+options (like using a local instance of compiler-explorer), you can do so
+through the `setup()` function. You can find all the options
+[here](https://github.com/krady21/compiler-explorer.nvim/blob/7f03a00ab31d1f7de684679cf42d11e035c5f21e/lua/compiler-explorer/config.lua#L3).
 ```lua
 require("compiler-explorer").setup({
   url = "http://localhost:10240",
@@ -73,3 +76,9 @@ require("compiler-explorer").setup({
 - [ ] `GET  /source/builtin/list`
 - [ ] `GET  /source/builtin/load/<lang-id>/<example-id>`
 
+## Related projects
+- [godbolt.nvim](https://github.com/p00f/godbolt.nvim)
+
+## Inspiration
+The async.lua and alert.lua modules are either inspired or taken directly from
+[gitsigns.nvim](https://github.com/lewis6991/gitsigns.nvim) .
