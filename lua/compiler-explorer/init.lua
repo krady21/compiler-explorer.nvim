@@ -90,6 +90,7 @@ M.compile = async.void(function(start, finish)
   -- Compile
   local body = rest.create_compile_body(compiler.id, compiler_opts, source)
   local out = rest.compile_post(compiler.id, body)
+
   local asm_lines = {}
   for _, line in ipairs(out.asm) do
     table.insert(asm_lines, line.text)
@@ -111,7 +112,12 @@ M.compile = async.void(function(start, finish)
 
   vim.bo[asm_bufnr].modifiable = true
   api.nvim_buf_set_lines(asm_bufnr, 0, -1, false, asm_lines)
-  alert.info("Compilation done with %s compiler.", compiler.name)
+
+  if out.code == 0 then
+    alert.info("Compilation done with %s compiler.", compiler.name)
+  else
+    alert.error("Could not compile code with %s", compiler.name)
+  end
 
   -- Return to previous window
   vim.cmd("wincmd p")
@@ -219,6 +225,11 @@ M.format = async.void(function()
 
   local body = rest.create_format_body(formatter.type, source, style)
   local out = rest.format_post(formatter.type, body)
+
+  if out.exit ~= 0 then
+    alert.error("Could not format code with %s", formatter.name)
+    return
+  end
 
   -- Split by newlines
   local lines = vim.split(out.answer, "\n")
