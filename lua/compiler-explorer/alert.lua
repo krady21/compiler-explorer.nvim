@@ -12,7 +12,7 @@ M.warn = vim.schedule_wrap(function(s, ...)
 end)
 
 M.info = vim.schedule_wrap(function(s, ...)
-  vim.notify(s:format(...), vim.log.levels.WARN, { title = plugin_title })
+  vim.notify(s:format(...), vim.log.levels.INFO, { title = plugin_title })
 end)
 
 return M
