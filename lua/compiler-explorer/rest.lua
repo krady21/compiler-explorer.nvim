@@ -1,7 +1,18 @@
 local curl = require("plenary.curl")
 local config = require("compiler-explorer.config")
+local async = require("compiler-explorer.async")
 
 local json = vim.json
+
+local post_wrapped = async.wrap(function(url, opts, callback)
+  opts.callback = callback
+  curl.post(url, opts)
+end, 3)
+
+local get_wrapped = async.wrap(function(url, opts, callback)
+  opts.callback = callback
+  curl.get(url, opts)
+end, 3)
 
 local M = {}
 
@@ -12,7 +23,7 @@ M.cache = {
   formatters = {},
 }
 
-function M.languages_get()
+M.languages_get = async.void(function()
   if not vim.tbl_isempty(M.cache.langs) then
     return M.cache.langs
   end
@@ -20,36 +31,39 @@ function M.languages_get()
   local conf = config.get_config()
   local url = table.concat({ conf.url, "api", "languages" }, "/")
 
-  local resp = curl.get(url, {
+  local resp = get_wrapped(url, {
     accept = "application/json",
   })
+  async.scheduler()
 
   M.cache.langs = json.decode(resp.body)
   return M.cache.langs
-end
+end)
 
-function M.libraries_get(lang)
+M.libraries_get = async.void(function(lang)
   local conf = config.get_config()
   local url = table.concat({ conf.url, "api", "libraries", lang }, "/")
 
-  local resp = curl.get(url, {
+  local resp = get_wrapped(url, {
     accept = "application/json",
   })
+  async.scheduler()
   if resp.status ~= 200 then
     error("bad request")
   end
 
   local libs = json.decode(resp.body)
   return libs
-end
+end)
 
-function M.tooltip_get(arch, instruction)
+M.tooltip_get = async.void(function(arch, instruction)
   local conf = config.get_config()
   local url = table.concat({ conf.url, "api", "asm", arch, instruction }, "/")
 
-  local resp = curl.get(url, {
+  local resp = get_wrapped(url, {
     accept = "application/json",
   })
+  async.scheduler()
 
   local decoded = json.decode(resp.body)
   if resp.status ~= 200 then
@@ -57,25 +71,26 @@ function M.tooltip_get(arch, instruction)
   end
 
   return decoded
-end
+end)
 
-function M.formatters_get()
+M.formatters_get = async.void(function()
   if not vim.tbl_isempty(M.cache.formatters) then
     return M.cache.formatters
   end
   local conf = config.get_config()
   local url = table.concat({ conf.url, "api", "formats" }, "/")
 
-  local resp = curl.get(url, {
+  local resp = get_wrapped(url, {
     accept = "application/json",
   })
+  async.scheduler()
   if resp.status ~= 200 then
     error("bad request")
   end
 
   M.cache.formatters = json.decode(resp.body)
   return M.cache.formatters
-end
+end)
 
 function M.create_format_body(formatter_id, source, style)
   vim.validate({
@@ -91,26 +106,27 @@ function M.create_format_body(formatter_id, source, style)
   }
 end
 
-function M.format_post(formatter_id, body)
+M.format_post = async.void(function(formatter_id, body)
   local conf = config.get_config()
   local url = table.concat({ conf.url, "api", "format", formatter_id }, "/")
 
-  local resp = curl.post(url, {
+  local resp = post_wrapped(url, {
     body = json.encode(body),
     headers = {
       content_type = "application/json",
       accept = "application/json",
     },
   })
+  async.scheduler()
   if resp.status ~= 200 then
     error("bad request")
   end
 
   local out = json.decode(resp.body)
   return out
-end
+end)
 
-function M.compilers_get(lang)
+M.compilers_get = async.void(function(lang)
   if not vim.tbl_isempty(M.cache.compilers) then
     if lang then
       return vim.tbl_filter(function(el)
@@ -123,9 +139,10 @@ function M.compilers_get(lang)
   local conf = config.get_config()
   local url = table.concat({ conf.url, "api", "compilers" }, "/")
 
-  local resp = curl.get(url, {
+  local resp = get_wrapped(url, {
     accept = "application/json",
   })
+  async.scheduler()
   if resp.status ~= 200 then
     error("bad request")
   end
@@ -137,7 +154,7 @@ function M.compilers_get(lang)
     end, M.cache.compilers)
   end
   return M.cache.compilers
-end
+end)
 
 function M.create_compile_body(compiler_id, compiler_opts, source)
   vim.validate({
@@ -150,37 +167,43 @@ function M.create_compile_body(compiler_id, compiler_opts, source)
     table.insert(libs, { id = id, version = version })
   end
 
+  local tools = {}
+  for _, tool in ipairs(vim.b.tools or {}) do
+    table.insert(tools, { args = "", stdin = "", id = tool })
+  end
+
   return {
     source = source,
     compiler = compiler_id,
     allowStoreCodeDebug = true,
     options = {
       filters = {},
-      libraries = libs,
-      tools = {},
       compilerOptions = {},
+      libraries = libs,
+      tools = tools,
       userArguments = compiler_opts,
     },
   }
 end
 
-function M.compile_post(compiler_id, body)
+M.compile_post = async.void(function(compiler_id, body)
   local conf = config.get_config()
   local url = table.concat({ conf.url, "api", "compiler", compiler_id, "compile" }, "/")
 
-  local resp = curl.post(url, {
+  local resp = post_wrapped(url, {
     body = json.encode(body),
     headers = {
       content_type = "application/json",
       accept = "application/json",
     },
   })
+  async.scheduler()
   if resp.status ~= 200 then
     error("bad request")
   end
 
   local out = json.decode(resp.body)
   return out
-end
+end)
 
 return M

@@ -16,7 +16,7 @@ M.setup = function(user_config)
   config.setup(user_config or {})
 end
 
-M.show_tooltip = function()
+M.show_tooltip = async.void(function()
   local ok, response = pcall(rest.tooltip_get, vim.b.arch, fn.expand("<cword>"))
   if not ok then
     alert.error(response.msg)
@@ -28,7 +28,7 @@ M.show_tooltip = function()
     close_events = { "CursorMoved" },
     border = "single",
   })
-end
+end)
 
 M.compile = async.void(function(start, finish)
   local conf = config.get_config()
