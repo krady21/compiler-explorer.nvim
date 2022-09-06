@@ -50,8 +50,7 @@ local function execute(async_fn, ...)
       return
     end
 
-    local is_callable = type(err_or_fn) == "function" or getmetatable(err_or_fn)["__call"]
-    assert(is_callable, "type error :: expected func")
+    assert(vim.is_callable(err_or_fn), "type error :: expected func")
 
     local ret_fn = err_or_fn
     local args = { select(4, unpack(ret)) }
