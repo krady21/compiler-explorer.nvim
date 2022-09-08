@@ -17,10 +17,6 @@ command("CEFormat", function(_)
   require("compiler-explorer").format()
 end, {})
 
-command("CEShowTooltip", function(_)
-  require("compiler-explorer").show_tooltip()
-end, {})
-
 command("CEAddLibrary", function(_)
   require("compiler-explorer").add_library()
 end, {})

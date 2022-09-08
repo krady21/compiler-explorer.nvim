@@ -138,6 +138,10 @@ M.compile = async.void(function(start, finish)
       autocmd.create_autocmd(source_bufnr, asm_bufnr, out.asm)
     end
   end
+
+  vim.api.nvim_buf_create_user_command(asm_bufnr, "CEShowTooltip", function(_)
+    require("compiler-explorer").show_tooltip()
+  end, {})
 end)
 
 M.add_library = async.void(function()
