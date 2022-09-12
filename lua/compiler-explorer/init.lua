@@ -1,9 +1,10 @@
+local alert = require("compiler-explorer.alert")
 local async = require("compiler-explorer.async")
 local autocmd = require("compiler-explorer.autocmd")
 local config = require("compiler-explorer.config")
 local rest = require("compiler-explorer.rest")
 local stderr = require("compiler-explorer.stderr")
-local alert = require("compiler-explorer.alert")
+local window = require("compiler-explorer.window")
 
 local api, fn = vim.api, vim.fn
 
@@ -30,13 +31,16 @@ M.show_tooltip = async.void(function()
   })
 end)
 
-M.compile = async.void(function(start, finish)
+M.compile = async.void(function(start, finish, new_window)
   local conf = config.get_config()
 
   local last_line = fn.line("$")
   local is_full_buffer = function(first, last)
     return (first == 1) and (last == last_line)
   end
+
+  -- Get window handle of the source code window.
+  local source_winnr = api.nvim_get_current_win()
 
   -- Get buffer number of the source code buffer.
   local source_bufnr = fn.bufnr("%")
@@ -101,19 +105,7 @@ M.compile = async.void(function(start, finish)
     table.insert(asm_lines, line.text)
   end
 
-  local name = "asm"
-  local asm_bufnr = fn.bufnr(name)
-  if asm_bufnr == -1 then
-    asm_bufnr = api.nvim_create_buf(false, true)
-    api.nvim_buf_set_name(asm_bufnr, name)
-    api.nvim_buf_set_option(asm_bufnr, "ft", "asm")
-  end
-
-  if fn.bufwinnr(asm_bufnr) == -1 then
-    vim.cmd("vsplit")
-    local win = api.nvim_get_current_win()
-    api.nvim_win_set_buf(win, asm_bufnr)
-  end
+  local asm_bufnr = window.create_window_buffer(compiler.id, new_window)
 
   vim.bo[asm_bufnr].modifiable = true
   api.nvim_buf_set_lines(asm_bufnr, 0, -1, false, asm_lines)
@@ -124,8 +116,8 @@ M.compile = async.void(function(start, finish)
     alert.error("Could not compile code with %s", compiler.name)
   end
 
-  -- Return to previous window
-  vim.cmd("wincmd p")
+  -- Return to source window
+  api.nvim_set_current_win(source_winnr)
 
   vim.bo[asm_bufnr].modifiable = false
 
@@ -139,9 +131,7 @@ M.compile = async.void(function(start, finish)
     end
   end
 
-  vim.api.nvim_buf_create_user_command(asm_bufnr, "CEShowTooltip", function(_)
-    require("compiler-explorer").show_tooltip()
-  end, {})
+  vim.api.nvim_buf_create_user_command(asm_bufnr, "CEShowTooltip", require("compiler-explorer").show_tooltip, {})
 end)
 
 M.add_library = async.void(function()
