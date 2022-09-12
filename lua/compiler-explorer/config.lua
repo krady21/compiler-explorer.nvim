@@ -7,6 +7,7 @@ M.defaults = {
     enable = false,
     hl = "Cursorline",
   },
+  split = "split", -- How to split the window after the second compile (split/vsplit).
   prompt = {
     lang = "Select language> ",
     compiler = "Select compiler> ",

@@ -10,8 +10,8 @@ end
 vim.g.loaded_compiler_explorer = 1
 
 command("CECompile", function(opts)
-  require("compiler-explorer").compile(opts.line1, opts.line2)
-end, { range = "%" })
+  require("compiler-explorer").compile(opts.line1, opts.line2, opts.bang == true)
+end, { range = "%", bang = true })
 
 command("CEFormat", function(_)
   require("compiler-explorer").format()
