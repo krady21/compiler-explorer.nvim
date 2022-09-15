@@ -14,7 +14,24 @@ local get_wrapped = async.wrap(function(url, opts, callback)
   curl.get(url, opts)
 end, 3)
 
+local string_to_bool = {
+  ["true"] = true,
+  ["false"] = false,
+}
+
 local M = {}
+
+M.filters = {
+  binary = false,
+  commentOnly = true,
+  demangle = true,
+  directives = true,
+  execute = false,
+  intel = true,
+  labels = true,
+  libraryCode = true,
+  trim = false,
+}
 
 M.cache = {
   langs = {},
@@ -156,7 +173,7 @@ M.compilers_get = async.void(function(lang)
   return M.cache.compilers
 end)
 
-function M.create_compile_body(compiler_id, compiler_opts, source)
+function M.create_compile_body(compiler_id, compiler_opts, source, fargs)
   vim.validate({
     source = { source, "string" },
     compiler_id = { compiler_id, "string" },
@@ -172,13 +189,23 @@ function M.create_compile_body(compiler_id, compiler_opts, source)
     table.insert(tools, { args = "", stdin = "", id = tool })
   end
 
+  local filters = M.filters
+  for _, f in ipairs(fargs) do
+    local split_arg = vim.split(f, "=")
+    if #split_arg == 1 then
+      filters[split_arg[1]] = true
+    elseif #split_arg == 2 then
+      filters[split_arg[1]] = string_to_bool[split_arg[2]]
+    end
+  end
+
   return {
     source = source,
     compiler = compiler_id,
     allowStoreCodeDebug = true,
     options = {
-      filters = {},
       compilerOptions = {},
+      filters = filters,
       libraries = libs,
       tools = tools,
       userArguments = compiler_opts,

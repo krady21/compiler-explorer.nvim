@@ -31,7 +31,7 @@ M.show_tooltip = async.void(function()
   })
 end)
 
-M.compile = async.void(function(start, finish, new_window)
+M.compile = async.void(function(opts)
   local conf = config.get_config()
 
   local last_line = fn.line("$")
@@ -46,14 +46,14 @@ M.compile = async.void(function(start, finish, new_window)
   local source_bufnr = fn.bufnr("%")
 
   -- Get contents of the selected lines.
-  local buf_contents = api.nvim_buf_get_lines(source_bufnr, start - 1, finish, false)
+  local buf_contents = api.nvim_buf_get_lines(source_bufnr, opts.line1 - 1, opts.line2, false)
   local source = table.concat(buf_contents, "\n")
 
   local lang_list = rest.languages_get()
   local possible_langs = lang_list
 
   -- Do not infer language when compiling only a visual selection.
-  if is_full_buffer(start, finish) then
+  if is_full_buffer(opts.line1, opts.line2) then
     -- Infer language based on extension and prompt user.
     local extension = "." .. fn.expand("%:e")
 
@@ -97,7 +97,7 @@ M.compile = async.void(function(start, finish, new_window)
   local compiler_opts = vim_input({ prompt = conf.prompt.compiler_opts })
 
   -- Compile
-  local body = rest.create_compile_body(compiler.id, compiler_opts, source)
+  local body = rest.create_compile_body(compiler.id, compiler_opts, source, opts.fargs)
   local out = rest.compile_post(compiler.id, body)
 
   local asm_lines = {}
@@ -105,7 +105,7 @@ M.compile = async.void(function(start, finish, new_window)
     table.insert(asm_lines, line.text)
   end
 
-  local asm_bufnr = window.create_window_buffer(compiler.id, new_window)
+  local asm_bufnr = window.create_window_buffer(compiler.id, opts.bang)
 
   vim.bo[asm_bufnr].modifiable = true
   api.nvim_buf_set_lines(asm_bufnr, 0, -1, false, asm_lines)
@@ -124,7 +124,7 @@ M.compile = async.void(function(start, finish, new_window)
   -- Used by tooltips
   vim.b[asm_bufnr].arch = compiler.instructionSet
 
-  if is_full_buffer(start, finish) then
+  if is_full_buffer(opts.line1, opts.line2) then
     stderr.parse_errors(out.stderr, source_bufnr)
     if conf.autocmd.enable then
       autocmd.create_autocmd(source_bufnr, asm_bufnr, out.asm)
@@ -147,7 +147,7 @@ M.add_library = async.void(function()
   end, lang_list)
 
   if vim.tbl_isempty(possible_langs) then
-    alert.error("File extension %s not supported by compiler-explorer", extension)
+    alert.error("File extension %s not supported by compiler-explorer.", extension)
     return
   end
 
@@ -168,7 +168,8 @@ M.add_library = async.void(function()
 
   local libs = rest.libraries_get(lang.id)
   if vim.tbl_isempty(libs) then
-    alert.info("No libraries are available for %", lang.name)
+    alert.info("No libraries are available for %.", lang.name)
+    return
   end
 
   -- Choose library
