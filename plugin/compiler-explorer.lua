@@ -10,21 +10,25 @@ end
 vim.g.loaded_compiler_explorer = 1
 
 command("CECompile", function(opts)
+  -- require("compiler-explorer").compile(opts.line1, opts.line2, opts.bang == true)
   require("compiler-explorer").compile(opts)
 end, {
   range = "%",
   bang = true,
   nargs = "*",
-  complete = function(arg_lead, _, _)
-    local body = require("compiler-explorer.rest").default_body
-    local list = vim.tbl_keys(body.options.filters)
+  complete = function(arg_lead, cmd_line, _)
+    local list = vim.tbl_keys(require("compiler-explorer.rest").default_body.options.filters)
     vim.list_extend(list, { "compiler", "flags" })
-
     return vim.tbl_filter(function(el)
       return string.sub(el, 1, #arg_lead) == arg_lead
     end, list)
   end,
 })
 
-command("CEFormat", require("compiler-explorer").format, {})
-command("CEAddLibrary", require("compiler-explorer").add_library, {})
+command("CEFormat", function(_)
+  require("compiler-explorer").format()
+end, {})
+
+command("CEAddLibrary", function(_)
+  require("compiler-explorer").add_library()
+end, {})
