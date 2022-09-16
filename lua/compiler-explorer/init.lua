@@ -31,6 +31,18 @@ M.show_tooltip = async.void(function()
   })
 end)
 
+M.goto_label = function()
+  local word_under_cursor = fn.expand("<cWORD>")
+  local label = vim.b.labels[word_under_cursor]
+  if label == nil then
+    alert.error("No label found with the name %s", word_under_cursor)
+    return
+  end
+
+  vim.cmd("norm m'")
+  fn.setcursorcharpos(label, 0)
+end
+
 local function to_bool(s)
   if s == "true" then
     return true
@@ -175,6 +187,9 @@ M.compile = async.void(function(opts)
   -- Used by tooltips
   vim.b[asm_bufnr].arch = compiler.instructionSet
 
+  -- Used by goto_label
+  vim.b[asm_bufnr].labels = out.labelDefinitions
+
   if is_full_buffer(opts.line1, opts.line2) then
     stderr.parse_errors(out.stderr, source_bufnr)
     if conf.autocmd.enable then
@@ -183,6 +198,7 @@ M.compile = async.void(function(opts)
   end
 
   vim.api.nvim_buf_create_user_command(asm_bufnr, "CEShowTooltip", require("compiler-explorer").show_tooltip, {})
+  vim.api.nvim_buf_create_user_command(asm_bufnr, "CEGotoLabel", require("compiler-explorer").goto_label, {})
 end)
 
 M.add_library = async.void(function()
