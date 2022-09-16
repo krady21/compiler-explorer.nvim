@@ -6,6 +6,10 @@ local last_buffer_name = nil
 
 local M = {}
 
+local function generate_bufname(compiler_id)
+  return table.concat({ "asm", compiler_id, math.random(100) }, "-")
+end
+
 -- Creates a new buffer and window or uses the previous one.
 function M.create_window_buffer(compiler_id, new_window)
   local conf = config.get_config()
@@ -13,7 +17,7 @@ function M.create_window_buffer(compiler_id, new_window)
   -- If this is the first compile or bang was used in the compile command.
   local name
   if new_window or last_buffer_name == nil then
-    name = table.concat({ "asm", compiler_id, math.random(100) }, "-")
+    name = generate_bufname(compiler_id)
     last_buffer_name = name
   else
     name = last_buffer_name
@@ -25,10 +29,12 @@ function M.create_window_buffer(compiler_id, new_window)
     api.nvim_buf_set_name(asm_bufnr, name)
     api.nvim_buf_set_option(asm_bufnr, "ft", "asm")
     api.nvim_buf_set_option(asm_bufnr, "bufhidden", "wipe")
+  else
+    api.nvim_buf_set_name(asm_bufnr, generate_bufname(compiler_id))
   end
 
   -- If the buffer is not associated with any window, create a new window.
-  if fn.bufwinnr(asm_bufnr) == -1 then
+  if fn.bufwinnr(asm_bufnr) == -1 or new_window then
     if #api.nvim_list_wins() == 1 then
       vim.cmd("vsplit")
     else
