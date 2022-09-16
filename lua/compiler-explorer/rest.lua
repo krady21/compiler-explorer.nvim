@@ -14,23 +14,35 @@ local get_wrapped = async.wrap(function(url, opts, callback)
   curl.get(url, opts)
 end, 3)
 
-local string_to_bool = {
-  ["true"] = true,
-  ["false"] = false,
-}
-
 local M = {}
 
-M.filters = {
-  binary = false,
-  commentOnly = true,
-  demangle = true,
-  directives = true,
-  execute = false,
-  intel = true,
-  labels = true,
-  libraryCode = true,
-  trim = false,
+M.default_body = {
+  source = "",
+  compiler = "",
+  allowStoreCodeDebug = true,
+  options = {
+    compilerOptions = {
+      produceCfg = false,
+      produceDevice = false,
+      produceGccDump = {},
+      produceLLVMOptPipeline = false,
+      producePp = false,
+    },
+    filters = {
+      binary = false,
+      commentOnly = true,
+      demangle = true,
+      directives = true,
+      execute = false,
+      intel = true,
+      labels = true,
+      libraryCode = true,
+      trim = false,
+    },
+    libraries = {},
+    tools = {},
+    userArguments = "",
+  },
 }
 
 M.cache = {
@@ -173,44 +185,40 @@ M.compilers_get = async.void(function(lang)
   return M.cache.compilers
 end)
 
-function M.create_compile_body(compiler_id, compiler_opts, source, fargs)
-  vim.validate({
-    source = { source, "string" },
-    compiler_id = { compiler_id, "string" },
-  })
+local function body_from_args(args)
+  local body = vim.deepcopy(M.default_body)
 
-  local libs = {}
-  for id, version in pairs(vim.b.libs or {}) do
-    table.insert(libs, { id = id, version = version })
-  end
+  local filters = vim.tbl_keys(body.options.filters)
 
-  local tools = {}
-  for _, tool in ipairs(vim.b.tools or {}) do
-    table.insert(tools, { args = "", stdin = "", id = tool })
-  end
+  for key, value in pairs(args) do
+    if vim.tbl_contains(filters, key) then
+      body.options.filters[key] = value
+    end
 
-  local filters = M.filters
-  for _, f in ipairs(fargs) do
-    local split_arg = vim.split(f, "=")
-    if #split_arg == 1 then
-      filters[split_arg[1]] = true
-    elseif #split_arg == 2 then
-      filters[split_arg[1]] = string_to_bool[split_arg[2]]
+    if key == "compiler" or key == "source" then
+      body[key] = value
+    end
+
+    -- Allow passing flags more than once.
+    if key == "flags" then
+      body.options.userArguments = body.options.userArguments .. value
     end
   end
+  return body
+end
 
-  return {
-    source = source,
-    compiler = compiler_id,
-    allowStoreCodeDebug = true,
-    options = {
-      compilerOptions = {},
-      filters = filters,
-      libraries = libs,
-      tools = tools,
-      userArguments = compiler_opts,
-    },
-  }
+function M.create_compile_body(args)
+  local body = body_from_args(args)
+
+  for id, version in pairs(vim.b.libs or {}) do
+    table.insert(body.libs, { id = id, version = version })
+  end
+
+  for _, tool in ipairs(vim.b.tools or {}) do
+    table.insert(body.tools, { args = "", stdin = "", id = tool })
+  end
+
+  return body
 end
 
 M.compile_post = async.void(function(compiler_id, body)

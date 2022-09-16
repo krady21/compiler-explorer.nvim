@@ -31,6 +31,42 @@ M.show_tooltip = async.void(function()
   })
 end)
 
+local function parse_args(fargs)
+  local args = {}
+  for _, f in ipairs(fargs) do
+    local split = vim.split(f, "=")
+    if #split == 1 then
+      args[split[1]] = true
+    elseif #split == 2 then
+      if split[2] == "true" then
+        args[split[1]] = true
+      elseif split[2] == "false" then
+        args[split[1]] = false
+      else
+        args[split[1]] = split[2]
+      end
+    end
+  end
+
+  return args
+end
+
+local function is_correct_compiler(compiler_id)
+  if compiler_id == nil or type(compiler_id) ~= "string" then
+    return nil
+  end
+
+  local compilers = rest.compilers_get()
+  local filtered = vim.tbl_filter(function(compiler)
+    return compiler.id == compiler_id
+  end, compilers)
+
+  if vim.tbl_isempty(filtered) then
+    error("incorrect compiler id")
+  end
+  return filtered[1]
+end
+
 M.compile = async.void(function(opts)
   local conf = config.get_config()
 
@@ -38,6 +74,8 @@ M.compile = async.void(function(opts)
   local is_full_buffer = function(first, last)
     return (first == 1) and (last == last_line)
   end
+
+  local args = parse_args(opts.fargs)
 
   -- Get window handle of the source code window.
   local source_winnr = api.nvim_get_current_win()
@@ -47,57 +85,66 @@ M.compile = async.void(function(opts)
 
   -- Get contents of the selected lines.
   local buf_contents = api.nvim_buf_get_lines(source_bufnr, opts.line1 - 1, opts.line2, false)
-  local source = table.concat(buf_contents, "\n")
+  args.source = table.concat(buf_contents, "\n")
 
-  local lang_list = rest.languages_get()
-  local possible_langs = lang_list
-
-  -- Do not infer language when compiling only a visual selection.
-  if is_full_buffer(opts.line1, opts.line2) then
-    -- Infer language based on extension and prompt user.
-    local extension = "." .. fn.expand("%:e")
-
-    possible_langs = vim.tbl_filter(function(el)
-      return vim.tbl_contains(el.extensions, extension)
-    end, lang_list)
-
-    if vim.tbl_isempty(possible_langs) then
-      alert.error("File extension %s not supported by compiler-explorer", extension)
-      return
-    end
-  end
-
-  local lang
-  if #possible_langs == 1 then
-    lang = possible_langs[1]
-  else
-    -- Choose language
-    lang = vim_select(possible_langs, {
-      prompt = conf.prompt.lang,
-      format_item = conf.format_item.lang,
-    })
-
-    if lang == nil or vim.tbl_isempty(lang) then
-      return
-    end
-  end
-
-  -- Choose compiler
-  local compilers = rest.compilers_get(lang.id)
-  local compiler = vim_select(compilers, {
-    prompt = conf.prompt.compiler,
-    format_item = conf.format_item.compiler,
-  })
-
-  if compiler == nil or vim.tbl_isempty(compiler) then
+  local ok, compiler = pcall(is_correct_compiler, args.compiler)
+  if not ok then
+    alert.error("Could not compile code with compiler id %s", args.compiler)
     return
   end
 
-  -- Choose compiler options
-  local compiler_opts = vim_input({ prompt = conf.prompt.compiler_opts })
+  if not compiler then
+    local lang_list = rest.languages_get()
+    local possible_langs = lang_list
+
+    -- Do not infer language when compiling only a visual selection.
+    if is_full_buffer(opts.line1, opts.line2) then
+      -- Infer language based on extension and prompt user.
+      local extension = "." .. fn.expand("%:e")
+
+      possible_langs = vim.tbl_filter(function(el)
+        return vim.tbl_contains(el.extensions, extension)
+      end, lang_list)
+
+      if vim.tbl_isempty(possible_langs) then
+        alert.error("File extension %s not supported by compiler-explorer", extension)
+        return
+      end
+    end
+
+    local lang
+    if #possible_langs == 1 then
+      lang = possible_langs[1]
+    else
+      -- Choose language
+      lang = vim_select(possible_langs, {
+        prompt = conf.prompt.lang,
+        format_item = conf.format_item.lang,
+      })
+
+      if lang == nil or vim.tbl_isempty(lang) then
+        return
+      end
+    end
+
+    -- Choose compiler
+    local compilers = rest.compilers_get(lang.id)
+    compiler = vim_select(compilers, {
+      prompt = conf.prompt.compiler,
+      format_item = conf.format_item.compiler,
+    })
+
+    if compiler == nil or vim.tbl_isempty(compiler) then
+      return
+    end
+
+    -- Choose compiler options
+    args.flags = vim_input({ prompt = conf.prompt.compiler_opts })
+    args.compiler = compiler.id
+  end
 
   -- Compile
-  local body = rest.create_compile_body(compiler.id, compiler_opts, source, opts.fargs)
+  local body = rest.create_compile_body(args)
   local out = rest.compile_post(compiler.id, body)
 
   local asm_lines = {}
