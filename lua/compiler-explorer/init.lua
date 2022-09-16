@@ -31,6 +31,16 @@ M.show_tooltip = async.void(function()
   })
 end)
 
+local function to_bool(s)
+  if s == "true" then
+    return true
+  elseif s == "false" then
+    return false
+  else
+    return s
+  end
+end
+
 local function parse_args(fargs)
   local args = {}
   for _, f in ipairs(fargs) do
@@ -38,13 +48,7 @@ local function parse_args(fargs)
     if #split == 1 then
       args[split[1]] = true
     elseif #split == 2 then
-      if split[2] == "true" then
-        args[split[1]] = true
-      elseif split[2] == "false" then
-        args[split[1]] = false
-      else
-        args[split[1]] = split[2]
-      end
+      args[split[1]] = to_bool(split[2])
     end
   end
 
