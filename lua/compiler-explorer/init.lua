@@ -10,8 +10,13 @@ local api, fn = vim.api, vim.fn
 
 local M = {}
 
-local vim_select = async.wrap(vim.ui.select, 3)
-local vim_input = async.wrap(vim.ui.input, 2)
+-- Return a function to avoid caching the vim.ui functions
+local vim_select = function()
+  return async.wrap(vim.ui.select, 3)
+end
+local vim_input = function()
+  return async.wrap(vim.ui.input, 2)
+end
 
 M.setup = function(user_config)
   config.setup(user_config or {})
@@ -133,7 +138,7 @@ M.compile = async.void(function(opts)
       lang = possible_langs[1]
     else
       -- Choose language
-      lang = vim_select(possible_langs, {
+      lang = vim_select()(possible_langs, {
         prompt = conf.prompt.lang,
         format_item = conf.format_item.lang,
       })
@@ -145,7 +150,7 @@ M.compile = async.void(function(opts)
 
     -- Choose compiler
     local compilers = rest.compilers_get(lang.id)
-    compiler = vim_select(compilers, {
+    compiler = vim_select()(compilers, {
       prompt = conf.prompt.compiler,
       format_item = conf.format_item.compiler,
     })
@@ -155,7 +160,7 @@ M.compile = async.void(function(opts)
     end
 
     -- Choose compiler options
-    args.flags = vim_input({ prompt = conf.prompt.compiler_opts })
+    args.flags = vim_input()({ prompt = conf.prompt.compiler_opts })
     args.compiler = compiler.id
   end
 
@@ -223,7 +228,7 @@ M.add_library = async.void(function()
     lang = possible_langs[1]
   else
     -- Choose language
-    lang = vim_select(possible_langs, {
+    lang = vim_select()(possible_langs, {
       prompt = conf.prompt.lang,
       format_item = conf.format_item.lang,
     })
@@ -240,7 +245,7 @@ M.add_library = async.void(function()
   end
 
   -- Choose library
-  local lib = vim_select(libs, {
+  local lib = vim_select()(libs, {
     prompt = conf.prompt.lib,
     format_item = conf.format_item.lib,
   })
@@ -250,7 +255,7 @@ M.add_library = async.void(function()
   end
 
   -- Choose language
-  local version = vim_select(lib.versions, {
+  local version = vim_select()(lib.versions, {
     prompt = conf.prompt.lib_version,
     format_item = conf.format_item.lib_version,
   })
@@ -274,7 +279,7 @@ M.format = async.void(function()
 
   -- Select formatter
   local formatters = rest.formatters_get()
-  local formatter = vim_select(formatters, {
+  local formatter = vim_select()(formatters, {
     prompt = conf.prompt.formatter,
     format_item = conf.format_item.formatter,
   })
@@ -285,7 +290,7 @@ M.format = async.void(function()
 
   local style = formatter.styles[1] or "__DefaultStyle"
   if #formatter.styles > 0 then
-    style = vim_select(formatter.styles, {
+    style = vim_select()(formatter.styles, {
       prompt = conf.prompt.formatter_style,
       format_item = conf.format_item.formatter_style,
     })
