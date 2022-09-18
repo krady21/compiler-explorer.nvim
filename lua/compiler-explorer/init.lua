@@ -59,7 +59,10 @@ local function to_bool(s)
 end
 
 local function parse_args(fargs)
+  local conf = config.get_config()
   local args = {}
+  args.inferLang = conf.infer_lang
+
   for _, f in ipairs(fargs) do
     local split = vim.split(f, "=")
     if #split == 1 then
@@ -90,12 +93,6 @@ end
 
 M.compile = async.void(function(opts)
   local conf = config.get_config()
-
-  local last_line = fn.line("$")
-  local is_full_buffer = function(first, last)
-    return (first == 1) and (last == last_line)
-  end
-
   local args = parse_args(opts.fargs)
 
   -- Get window handle of the source code window.
@@ -118,9 +115,8 @@ M.compile = async.void(function(opts)
     local lang_list = rest.languages_get()
     local possible_langs = lang_list
 
-    -- Do not infer language when compiling only a visual selection.
-    if is_full_buffer(opts.line1, opts.line2) then
-      -- Infer language based on extension and prompt user.
+    -- Infer language based on extension and prompt user.
+    if args.inferLang then
       local extension = "." .. fn.expand("%:e")
 
       possible_langs = vim.tbl_filter(function(el)
@@ -195,7 +191,7 @@ M.compile = async.void(function(opts)
   -- Used by goto_label
   vim.b[asm_bufnr].labels = out.labelDefinitions
 
-  if is_full_buffer(opts.line1, opts.line2) then
+  if args.inferLang then
     stderr.parse_errors(out.stderr, source_bufnr)
     if conf.autocmd.enable then
       autocmd.create_autocmd(source_bufnr, asm_bufnr, out.asm)
