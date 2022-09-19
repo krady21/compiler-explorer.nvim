@@ -4,7 +4,7 @@ local autocmd = require("compiler-explorer.autocmd")
 local config = require("compiler-explorer.config")
 local rest = require("compiler-explorer.rest")
 local stderr = require("compiler-explorer.stderr")
-local window = require("compiler-explorer.window")
+local util = require("compiler-explorer.util")
 
 local api, fn = vim.api, vim.fn
 
@@ -22,78 +22,9 @@ M.setup = function(user_config)
   config.setup(user_config or {})
 end
 
-M.show_tooltip = async.void(function()
-  local ok, response = pcall(rest.tooltip_get, vim.b.arch, fn.expand("<cword>"))
-  if not ok then
-    alert.error(response.msg)
-    return
-  end
-
-  vim.lsp.util.open_floating_preview({ response.tooltip }, "markdown", {
-    wrap = true,
-    close_events = { "CursorMoved" },
-    border = "single",
-  })
-end)
-
-M.goto_label = function()
-  local word_under_cursor = fn.expand("<cWORD>")
-  local label = vim.b.labels[word_under_cursor]
-  if label == nil then
-    alert.error("No label found with the name %s", word_under_cursor)
-    return
-  end
-
-  vim.cmd("norm m'")
-  fn.setcursorcharpos(label, 0)
-end
-
-local function to_bool(s)
-  if s == "true" then
-    return true
-  elseif s == "false" then
-    return false
-  else
-    return s
-  end
-end
-
-local function parse_args(fargs)
-  local conf = config.get_config()
-  local args = {}
-  args.inferLang = conf.infer_lang
-
-  for _, f in ipairs(fargs) do
-    local split = vim.split(f, "=")
-    if #split == 1 then
-      args[split[1]] = true
-    elseif #split == 2 then
-      args[split[1]] = to_bool(split[2])
-    end
-  end
-
-  return args
-end
-
-local function is_correct_compiler(compiler_id)
-  if compiler_id == nil or type(compiler_id) ~= "string" then
-    return nil
-  end
-
-  local compilers = rest.compilers_get()
-  local filtered = vim.tbl_filter(function(compiler)
-    return compiler.id == compiler_id
-  end, compilers)
-
-  if vim.tbl_isempty(filtered) then
-    error("incorrect compiler id")
-  end
-  return filtered[1]
-end
-
 M.compile = async.void(function(opts)
   local conf = config.get_config()
-  local args = parse_args(opts.fargs)
+  local args = util.parse_args(opts.fargs)
 
   -- Get window handle of the source code window.
   local source_winnr = api.nvim_get_current_win()
@@ -105,7 +36,7 @@ M.compile = async.void(function(opts)
   local buf_contents = api.nvim_buf_get_lines(source_bufnr, opts.line1 - 1, opts.line2, false)
   args.source = table.concat(buf_contents, "\n")
 
-  local ok, compiler = pcall(is_correct_compiler, args.compiler)
+  local ok, compiler = pcall(util.check_compiler, args.compiler)
   if not ok then
     alert.error("Could not compile code with compiler id %s", args.compiler)
     return
@@ -162,35 +93,25 @@ M.compile = async.void(function(opts)
 
   -- Compile
   local body = rest.create_compile_body(args)
-  local out = rest.compile_post(compiler.id, body)
+  local response = rest.compile_post(compiler.id, body)
 
   local asm_lines = vim.tbl_map(function(line)
     return line.text
-  end, out.asm)
+  end, response.asm)
 
-  local asm_bufnr = window.create_window_buffer(compiler.id, opts.bang)
+  local asm_bufnr = util.create_window_buffer(compiler.id, opts.bang)
 
   vim.bo[asm_bufnr].modifiable = true
   api.nvim_buf_set_lines(asm_bufnr, 0, -1, false, asm_lines)
 
-  if out.code == 0 then
+  if response.code == 0 then
     alert.info("Compilation done with %s compiler.", compiler.name)
   else
     alert.error("Could not compile code with %s", compiler.name)
   end
 
-  local ns = vim.api.nvim_create_namespace("CompilerExplorer")
-  for i, line in ipairs(out.asm) do
-    if line.address ~= nil then
-      local address = string.format("%x", line.address)
-      local opcodes = " " .. table.concat(line.opcodes, " ")
-
-      vim.api.nvim_buf_set_extmark(asm_bufnr, ns, i - 1, 0, {
-        virt_lines_above = true,
-        virt_lines = { { { opcodes, conf.binary_hl } } },
-        virt_text = { { address, conf.binary_hl } },
-      })
-    end
+  if args.binary then
+    util.set_binary_extmarks(response.asm, asm_bufnr)
   end
 
   -- Return to source window
@@ -198,18 +119,15 @@ M.compile = async.void(function(opts)
 
   vim.bo[asm_bufnr].modifiable = false
 
-  -- Used by tooltips
-  vim.b[asm_bufnr].arch = compiler.instructionSet
-
-  -- Used by goto_label
-  vim.b[asm_bufnr].labels = out.labelDefinitions
-
   if args.inferLang then
-    stderr.parse_errors(out.stderr, source_bufnr)
+    stderr.parse_errors(response.stderr, source_bufnr)
     if conf.autocmd.enable then
-      autocmd.create_autocmd(source_bufnr, asm_bufnr, out.asm)
+      autocmd.create_autocmd(source_bufnr, asm_bufnr, response.asm)
     end
   end
+
+  vim.b[asm_bufnr].arch = compiler.instructionSet -- used by show_tooltips
+  vim.b[asm_bufnr].labels = response.labelDefinitions -- used by goto_label
 
   vim.api.nvim_buf_create_user_command(asm_bufnr, "CEShowTooltip", require("compiler-explorer").show_tooltip, {})
   vim.api.nvim_buf_create_user_command(asm_bufnr, "CEGotoLabel", require("compiler-explorer").goto_label, {})
@@ -325,5 +243,31 @@ M.format = async.void(function()
 
   alert.info("Text formatted using %s and style %s", formatter.name, style)
 end)
+
+M.show_tooltip = async.void(function()
+  local ok, response = pcall(rest.tooltip_get, vim.b.arch, fn.expand("<cword>"))
+  if not ok then
+    alert.error(response.msg)
+    return
+  end
+
+  vim.lsp.util.open_floating_preview({ response.tooltip }, "markdown", {
+    wrap = true,
+    close_events = { "CursorMoved" },
+    border = "single",
+  })
+end)
+
+M.goto_label = function()
+  local word_under_cursor = fn.expand("<cWORD>")
+  local label = vim.b.labels[word_under_cursor]
+  if label == nil then
+    alert.error("No label found with the name %s", word_under_cursor)
+    return
+  end
+
+  vim.cmd("norm m'")
+  fn.setcursorcharpos(label, 0)
+end
 
 return M
