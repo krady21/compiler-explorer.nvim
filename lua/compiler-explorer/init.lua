@@ -164,10 +164,9 @@ M.compile = async.void(function(opts)
   local body = rest.create_compile_body(args)
   local out = rest.compile_post(compiler.id, body)
 
-  local asm_lines = {}
-  for _, line in ipairs(out.asm) do
-    table.insert(asm_lines, line.text)
-  end
+  local asm_lines = vim.tbl_map(function(line)
+    return line.text
+  end, out.asm)
 
   local asm_bufnr = window.create_window_buffer(compiler.id, opts.bang)
 
@@ -178,6 +177,20 @@ M.compile = async.void(function(opts)
     alert.info("Compilation done with %s compiler.", compiler.name)
   else
     alert.error("Could not compile code with %s", compiler.name)
+  end
+
+  local ns = vim.api.nvim_create_namespace("CompilerExplorer")
+  for i, line in ipairs(out.asm) do
+    if line.address ~= nil then
+      local address = string.format("%x", line.address)
+      local opcodes = " " .. table.concat(line.opcodes, " ")
+
+      vim.api.nvim_buf_set_extmark(asm_bufnr, ns, i - 1, 0, {
+        virt_lines_above = true,
+        virt_lines = { { { opcodes, conf.binary_hl } } },
+        virt_text = { { address, conf.binary_hl } },
+      })
+    end
   end
 
   -- Return to source window

@@ -4,6 +4,7 @@ M.defaults = {
   url = "https://godbolt.org",
   open_qflist = false,
   infer_lang = true, -- Try to infer possible language based on file extension.
+  binary_hl = "Comment",
   autocmd = {
     enable = false,
     hl = "Cursorline",
