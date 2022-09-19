@@ -1,0 +1,70 @@
+*compiler-explorer.txt* Lua plugin for compiler-explorer
+*compiler-explorer.nvim*
+
+Author: Bogdan Grigoruță <bogdangrigoruta@gmail.com>
+Homepage: <https://github.com/krady21/compiler-explorer.nvim>
+License: MIT License
+
+==============================================================================
+INTRODUCTION                                               *compiler-explorer*
+
+This plugin uses the exposed REST API endpoints provided by compiler-explorer
+in order to allow the user to compile, format and inspect assembly directly
+from neovim. The compiles are done asynchronously, with the help of |vim.loop|
+and the plenary curl module.
+
+==============================================================================
+COMMANDS                                          *compiler-explorer-commands*
+
+                                                                  *:CECompile*
+:CECompile {args}
+                        Compile the source code found in the current buffer
+                        using <https://godbolt.org/> or a local instance and
+                        dump the assembly output to a new window. If the
+                        compiler argument is not passed, the user is prompted
+                        to select a compiler from a list of available ones and
+                        pass compiler flags.
+
+                                                                 *:CECompile!*
+:CECompile! {args}      Similar to |:CECompile| but creates a new window insted
+                        of using the last one created.
+
+:CEFormat                                                          *:CEFormat*
+                        Format the source code found in the current buffer
+                        with a formatter selected by the user.
+
+:CEAddLibrary                                                  *:CEAddLibrary*
+                        Add a library interactively to be used in future calls
+                        of |:CECompile|. If you add the same library
+                        repeatedly, only the last version will be used.
+
+
+These commands are local to the assembly output buffers.
+
+:CEShowTooltip                                                *:CEShowTooltip*
+                        Show information about a specific instruction under
+                        cursor. Not all architectures support this feature.
+
+:CEGotoLabel                                                    *:CEGotoLabel*
+                        Jumps to the label definition under cursor.
+
+==============================================================================
+CONFIGURATION
+
+The plugin works out of the box without configuration. If you want to change
+some of the options, you can do so through the setup() function. All the
+possible options can be found in the config.lua module in the source repo.
+
+Example:
+require("compiler-explorer").setup({
+  url = "http://localhost:10240",
+  open_qflist = true,
+  infer_lang = false,
+  autocmd = {
+    enable = true,
+    hl = "Search",
+  }
+})
+
+
+vim:tw=78:et:ft=help:norl:
