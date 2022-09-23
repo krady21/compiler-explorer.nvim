@@ -62,7 +62,9 @@ require("compiler-explorer").setup({
 - CECompile
 - CEFormat
 - CEAddLibrary
-- CEShowTooltip
+- CELoadExample
+- CEShowTooltip (local to assembly buffer)
+- CEGotoLabel (local to assembly buffer)
 
 ## API Coverage:
 - [x] `GET  /api/languages`
@@ -73,8 +75,8 @@ require("compiler-explorer").setup({
 - [x] `GET  /api/formats`
 - [x] `POST /api/format/<formatter>`
 - [x] `GET  /api/asm/<instruction-set>/<instruction>`
-- [ ] `GET  /source/builtin/list`
-- [ ] `GET  /source/builtin/load/<lang-id>/<example-id>`
+- [x] `GET  /source/builtin/list`
+- [x] `GET  /source/builtin/load/<lang-id>/<example-id>`
 
 ## Related projects
 - [godbolt.nvim](https://github.com/p00f/godbolt.nvim)

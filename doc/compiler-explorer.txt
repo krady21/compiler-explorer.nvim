@@ -38,6 +38,9 @@ COMMANDS                                          *compiler-explorer-commands*
                         of |:CECompile|. If you add the same library
                         repeatedly, only the last version will be used.
 
+:CELoadExample                                                *:CELoadExample*
+                        Load an existing code example to a new tab.
+
 
 These commands are local to the assembly output buffers.
 

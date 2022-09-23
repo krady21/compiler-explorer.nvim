@@ -270,4 +270,54 @@ M.goto_label = function()
   fn.setcursorcharpos(label, 0)
 end
 
+M.load_example = async.void(function()
+  local conf = config.get_config()
+  local examples = rest.list_examples_get()
+
+  local examples_by_lang = {}
+  for _, example in ipairs(examples) do
+    if examples_by_lang[example.lang] == nil then
+      examples_by_lang[example.lang] = { example }
+    else
+      table.insert(examples_by_lang[example.lang], example)
+    end
+  end
+
+  local langs = vim.tbl_keys(examples_by_lang)
+  table.sort(langs, function(left, right)
+    return left < right
+  end)
+
+  local lang_id = vim_select()(langs, {
+    prompt = conf.prompt.lang,
+    format_item = function(item)
+      return item
+    end,
+  })
+
+  local example = vim_select()(examples_by_lang[lang_id], {
+    prompt = "Select example> ",
+    format_item = function(item)
+      return item.name
+    end,
+  })
+  local resp = rest.load_example_get(lang_id, example.file)
+  local lines = vim.split(resp.file, "\n")
+
+  langs = rest.languages_get()
+  local filtered = vim.tbl_filter(function(el)
+    return el.id == lang_id
+  end, langs)
+  local extension = filtered[1].extensions[1]
+  local bufname = example.file .. extension
+
+  vim.cmd("tabedit")
+  api.nvim_buf_set_lines(0, 0, -1, false, lines)
+  api.nvim_buf_set_name(0, bufname)
+  api.nvim_buf_set_option(0, "bufhidden", "wipe")
+
+  vim.filetype.match(bufname, 0)
+end)
+
+M.load_example()
 return M

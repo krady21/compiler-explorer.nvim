@@ -33,3 +33,7 @@ end, {})
 command("CEAddLibrary", function(_)
   require("compiler-explorer").add_library()
 end, {})
+
+command("CELoadExample", function(_)
+  require("compiler-explorer").load_example()
+end, {})
