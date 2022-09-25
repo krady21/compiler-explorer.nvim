@@ -69,10 +69,6 @@ M.compile = async.void(function(opts)
         prompt = conf.prompt.lang,
         format_item = conf.format_item.lang,
       })
-
-      if lang == nil or vim.tbl_isempty(lang) then
-        return
-      end
     end
 
     -- Choose compiler
@@ -81,10 +77,6 @@ M.compile = async.void(function(opts)
       prompt = conf.prompt.compiler,
       format_item = conf.format_item.compiler,
     })
-
-    if compiler == nil or vim.tbl_isempty(compiler) then
-      return
-    end
 
     -- Choose compiler options
     args.flags = vim_input()({ prompt = conf.prompt.compiler_opts })
@@ -101,7 +93,7 @@ M.compile = async.void(function(opts)
 
   local asm_bufnr = util.create_window_buffer(compiler.id, opts.bang)
 
-  vim.bo[asm_bufnr].modifiable = true
+  api.nvim_buf_set_option(asm_bufnr, "modifiable", true)
   api.nvim_buf_set_lines(asm_bufnr, 0, -1, false, asm_lines)
 
   if response.code == 0 then
@@ -117,7 +109,7 @@ M.compile = async.void(function(opts)
   -- Return to source window
   api.nvim_set_current_win(source_winnr)
 
-  vim.bo[asm_bufnr].modifiable = false
+  api.nvim_buf_set_option(asm_bufnr, "modifiable", false)
 
   if args.inferLang then
     stderr.parse_errors(response.stderr, source_bufnr)
@@ -126,11 +118,11 @@ M.compile = async.void(function(opts)
     end
   end
 
-  vim.b[asm_bufnr].arch = compiler.instructionSet -- used by show_tooltips
-  vim.b[asm_bufnr].labels = response.labelDefinitions -- used by goto_label
+  api.nvim_buf_set_var(asm_bufnr, "arch", compiler.instructionSet) -- used by show_tooltips
+  api.nvim_buf_set_var(asm_bufnr, "labels", response.labelDefinitions) -- used by goto_label
 
-  vim.api.nvim_buf_create_user_command(asm_bufnr, "CEShowTooltip", require("compiler-explorer").show_tooltip, {})
-  vim.api.nvim_buf_create_user_command(asm_bufnr, "CEGotoLabel", require("compiler-explorer").goto_label, {})
+  api.nvim_buf_create_user_command(asm_bufnr, "CEShowTooltip", require("compiler-explorer").show_tooltip, {})
+  api.nvim_buf_create_user_command(asm_bufnr, "CEGotoLabel", require("compiler-explorer").goto_label, {})
 end)
 
 M.add_library = async.void(function()
@@ -159,10 +151,6 @@ M.add_library = async.void(function()
       prompt = conf.prompt.lang,
       format_item = conf.format_item.lang,
     })
-
-    if lang == nil or vim.tbl_isempty(lang) then
-      return
-    end
   end
 
   local libs = rest.libraries_get(lang.id)
@@ -177,19 +165,11 @@ M.add_library = async.void(function()
     format_item = conf.format_item.lib,
   })
 
-  if lib == nil or vim.tbl_isempty(lib) then
-    return
-  end
-
-  -- Choose language
+  -- Choose version
   local version = vim_select()(lib.versions, {
     prompt = conf.prompt.lib_version,
     format_item = conf.format_item.lib_version,
   })
-
-  if version == nil or vim.tbl_isempty(version) then
-    return
-  end
 
   -- Add lib to buffer variable, overwriting previous library version if already present
   vim.b.libs = vim.tbl_deep_extend("force", vim.b.libs or {}, { [lib.id] = version.version })
@@ -210,10 +190,6 @@ M.format = async.void(function()
     prompt = conf.prompt.formatter,
     format_item = conf.format_item.formatter,
   })
-
-  if formatter == nil or vim.tbl_isempty(formatter) then
-    return
-  end
 
   local style = formatter.styles[1] or "__DefaultStyle"
   if #formatter.styles > 0 then
@@ -284,9 +260,7 @@ M.load_example = async.void(function()
   end
 
   local langs = vim.tbl_keys(examples_by_lang)
-  table.sort(langs, function(left, right)
-    return left < right
-  end)
+  table.sort(langs)
 
   local lang_id = vim_select()(langs, {
     prompt = conf.prompt.lang,
@@ -301,8 +275,8 @@ M.load_example = async.void(function()
       return item.name
     end,
   })
-  local resp = rest.load_example_get(lang_id, example.file)
-  local lines = vim.split(resp.file, "\n")
+  local response = rest.load_example_get(lang_id, example.file)
+  local lines = vim.split(response.file, "\n")
 
   langs = rest.languages_get()
   local filtered = vim.tbl_filter(function(el)
