@@ -319,5 +319,4 @@ M.load_example = async.void(function()
   vim.filetype.match(bufname, 0)
 end)
 
-M.load_example()
 return M
