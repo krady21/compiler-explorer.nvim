@@ -115,11 +115,9 @@ M.compile = async.void(function(opts)
 
   api.nvim_buf_set_option(asm_bufnr, "modifiable", false)
 
-  if args.inferLang then
-    stderr.parse_errors(response.stderr, source_bufnr)
-    if conf.autocmd.enable then
-      autocmd.create_autocmd(source_bufnr, asm_bufnr, response.asm)
-    end
+  stderr.parse_errors(response.stderr, source_bufnr)
+  if conf.autocmd.enable then
+    autocmd.create_autocmd(source_bufnr, asm_bufnr, response.asm, opts.line1 - 1)
   end
 
   api.nvim_buf_set_var(asm_bufnr, "arch", compiler.instructionSet) -- used by show_tooltips

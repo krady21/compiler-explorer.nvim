@@ -4,11 +4,11 @@ local api, fn = vim.api, vim.fn
 
 local M = {}
 
-local function create_linehl_dict(asm)
+local function create_linehl_dict(asm, offset)
   local source_to_asm, asm_to_source = {}, {}
   for asm_idx, line_obj in ipairs(asm) do
     if line_obj.source ~= vim.NIL and line_obj.source.line ~= vim.NIL then
-      local source_idx = line_obj.source.line
+      local source_idx = line_obj.source.line + offset
       if source_to_asm[source_idx] == nil then
         source_to_asm[source_idx] = {}
       end
@@ -21,9 +21,9 @@ local function create_linehl_dict(asm)
   return source_to_asm, asm_to_source
 end
 
-M.create_autocmd = function(source_bufnr, asm_bufnr, resp)
+M.create_autocmd = function(source_bufnr, asm_bufnr, resp, offset)
   local conf = config.get_config()
-  local source_to_asm, asm_to_source = create_linehl_dict(resp)
+  local source_to_asm, asm_to_source = create_linehl_dict(resp, offset)
 
   local gid = api.nvim_create_augroup("CompilerExplorer", { clear = true })
   local ns = api.nvim_create_namespace("CompilerExplorer")
@@ -44,6 +44,7 @@ M.create_autocmd = function(source_bufnr, asm_bufnr, resp)
         for _, hl in ipairs(hl_list) do
           vim.highlight.range(asm_bufnr, ns, conf.autocmd.hl, { hl - 1, 0 }, { hl - 1, -1 }, "linewise", true)
         end
+        api.nvim_win_set_cursor(fn.bufwinid(asm_bufnr), { hl_list[1], 0 })
       end
     end,
   })
@@ -58,6 +59,7 @@ M.create_autocmd = function(source_bufnr, asm_bufnr, resp)
       local hl = asm_to_source[line_nr]
       if hl then
         vim.highlight.range(source_bufnr, ns, conf.autocmd.hl, { hl - 1, 0 }, { hl - 1, -1 }, "linewise", true)
+        api.nvim_win_set_cursor(fn.bufwinid(source_bufnr), { hl, 0 })
       end
     end,
   })
