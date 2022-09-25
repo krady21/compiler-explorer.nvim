@@ -211,11 +211,11 @@ function M.create_compile_body(args)
   local body = body_from_args(args)
 
   for id, version in pairs(vim.b.libs or {}) do
-    table.insert(body.libs, { id = id, version = version })
+    table.insert(body.options.libraries, { id = id, version = version })
   end
 
   for _, tool in ipairs(vim.b.tools or {}) do
-    table.insert(body.tools, { args = "", stdin = "", id = tool })
+    table.insert(body.options.tools, { args = "", stdin = "", id = tool })
   end
 
   return body
