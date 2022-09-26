@@ -29,7 +29,7 @@ local function trim_msg_severity(err)
   end
 end
 
-M.parse_errors = function(stderr, bufnr)
+M.parse_errors = function(stderr, bufnr, offset)
   -- stderr can be vim.NIL (ex: for golang) which is of type userdata
   if type(stderr) ~= "table" then
     return
@@ -43,7 +43,7 @@ M.parse_errors = function(stderr, bufnr)
   for _, err in ipairs(stderr) do
     if is_full_err(err) then
       table.insert(diagnostics, {
-        lnum = err.tag.line - 1,
+        lnum = err.tag.line + offset - 1,
         col = err.tag.column - 1,
         message = trim_msg_severity(err.tag.text),
         bufnr = bufnr,

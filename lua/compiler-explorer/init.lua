@@ -115,7 +115,7 @@ M.compile = async.void(function(opts)
 
   api.nvim_buf_set_option(asm_bufnr, "modifiable", false)
 
-  stderr.parse_errors(response.stderr, source_bufnr)
+  stderr.parse_errors(response.stderr, source_bufnr, opts.line1 - 1)
   if conf.autocmd.enable then
     autocmd.create_autocmd(source_bufnr, asm_bufnr, response.asm, opts.line1 - 1)
   end
