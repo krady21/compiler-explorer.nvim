@@ -96,6 +96,7 @@ M.compile = async.void(function(opts)
   end, response.asm)
 
   local asm_bufnr = util.create_window_buffer(compiler.id, opts.bang)
+  api.nvim_buf_clear_namespace(asm_bufnr, -1, 0, -1)
 
   api.nvim_buf_set_option(asm_bufnr, "modifiable", true)
   api.nvim_buf_set_lines(asm_bufnr, 0, -1, false, asm_lines)
@@ -116,7 +117,7 @@ M.compile = async.void(function(opts)
   api.nvim_buf_set_option(asm_bufnr, "modifiable", false)
 
   stderr.parse_errors(response.stderr, source_bufnr, opts.line1 - 1)
-  if conf.autocmd.enable then
+  if conf.autocmd.enable and not args.binary then
     autocmd.create_autocmd(source_bufnr, asm_bufnr, response.asm, opts.line1 - 1)
   end
 

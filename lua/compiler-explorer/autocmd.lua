@@ -24,13 +24,12 @@ end
 M.create_autocmd = function(source_bufnr, asm_bufnr, resp, offset)
   local conf = config.get_config()
   local source_to_asm, asm_to_source = create_linehl_dict(resp, offset)
-
-  local gid = api.nvim_create_augroup("CompilerExplorer", { clear = true })
-  local ns = api.nvim_create_namespace("CompilerExplorer")
-
   if vim.tbl_isempty(source_to_asm) or vim.tbl_isempty(asm_to_source) then
     return
   end
+
+  local gid = api.nvim_create_augroup("CompilerExplorer", { clear = true })
+  local ns = api.nvim_create_namespace("ce-autocmds")
 
   api.nvim_create_autocmd({ "CursorMoved" }, {
     group = gid,
@@ -77,6 +76,16 @@ M.create_autocmd = function(source_bufnr, asm_bufnr, resp, offset)
     buffer = asm_bufnr,
     callback = function()
       api.nvim_buf_clear_namespace(source_bufnr, ns, 0, -1)
+    end,
+  })
+
+  api.nvim_create_autocmd({ "TextChanged", "TextChangedI", "TextChangedP" }, {
+    group = gid,
+    buffer = source_bufnr,
+    callback = function()
+      api.nvim_buf_clear_namespace(source_bufnr, ns, 0, -1)
+      api.nvim_buf_clear_namespace(asm_bufnr, ns, 0, -1)
+      api.nvim_clear_autocmds({ group = gid })
     end,
   })
 end

@@ -46,7 +46,7 @@ end
 
 function M.set_binary_extmarks(lines, bufnr)
   local conf = config.get_config()
-  local ns = vim.api.nvim_create_namespace("CompilerExplorer")
+  local ns = api.nvim_create_namespace("ce-binary")
 
   for i, line in ipairs(lines) do
     if line.address ~= nil then

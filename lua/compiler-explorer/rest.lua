@@ -261,7 +261,6 @@ end)
 M.load_example_get = async.void(function(lang, name)
   local conf = config.get_config()
   local url = table.concat({ conf.url, "source", "builtin", "load", lang, name }, "/")
-  print(url)
 
   local resp = get_wrapped(url, {
     accept = "application/json",
