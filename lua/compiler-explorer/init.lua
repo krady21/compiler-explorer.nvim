@@ -89,7 +89,9 @@ M.compile = async.void(function(opts)
 
   -- Compile
   local body = rest.create_compile_body(args)
+  util.start_spinner()
   local response = rest.compile_post(compiler.id, body)
+  util.stop_spinner()
 
   local asm_lines = vim.tbl_map(function(line)
     return line.text

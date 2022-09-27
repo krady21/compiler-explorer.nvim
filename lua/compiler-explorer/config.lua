@@ -10,6 +10,8 @@ M.defaults = {
     hl = "Cursorline",
   },
   split = "split", -- How to split the window after the second compile (split/vsplit).
+  spinner_frames = { "⣼", "⣹", "⢻", "⠿", "⡟", "⣏", "⣧", "⣶" },
+  spinner_interval = 100,
 }
 
 M._config = M.defaults

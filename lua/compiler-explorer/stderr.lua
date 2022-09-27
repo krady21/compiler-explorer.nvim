@@ -5,6 +5,7 @@ local api = vim.api
 local M = {}
 
 local severity_map = {
+  [1] = vim.diagnostic.severity.INFO,
   [2] = vim.diagnostic.severity.WARN,
   [3] = vim.diagnostic.severity.ERROR,
 }

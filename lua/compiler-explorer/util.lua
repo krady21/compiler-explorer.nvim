@@ -1,6 +1,7 @@
 local config = require("compiler-explorer.config")
 local rest = require("compiler-explorer.rest")
 
+local uv = vim.loop
 local api, fn = vim.api, vim.fn
 
 local last_buffer_name = nil
@@ -103,6 +104,27 @@ function M.parse_args(fargs)
   end
 
   return args
+end
+
+function M.start_spinner()
+  local conf = config.get_config()
+  local frames = conf.spinner_frames
+  local interval = conf.spinner_interval
+
+  local i = 1
+  M.timer = uv.new_timer()
+  M.timer:start(0, interval, function()
+    i = (i == #frames) and 1 or (i + 1)
+    local msg = string.format(" Compiling %s", frames[i])
+    vim.schedule(function()
+      api.nvim_echo({ { msg, "None" } }, false, {})
+    end)
+  end)
+end
+
+function M.stop_spinner()
+  M.timer:stop()
+  M.timer:close()
 end
 
 return M
