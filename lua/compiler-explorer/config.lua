@@ -9,6 +9,11 @@ M.defaults = {
     enable = false,
     hl = "Cursorline",
   },
+  diagnostics = { -- vim.diagnostic.config() options for the ce-diagnostics namespace.
+    underline = false,
+    virtual_text = false,
+    signs = false,
+  },
   split = "split", -- How to split the window after the second compile (split/vsplit).
   spinner_frames = { "⣼", "⣹", "⢻", "⠿", "⡟", "⣏", "⣧", "⣶" },
   spinner_interval = 100,
@@ -23,4 +28,5 @@ end
 function M.get_config()
   return M._config
 end
+
 return M

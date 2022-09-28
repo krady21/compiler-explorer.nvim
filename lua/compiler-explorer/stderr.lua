@@ -11,34 +11,21 @@ local severity_map = {
 }
 
 local function is_full_err(err)
-  if not err.tag then
-    return false
-  end
-
-  if err.tag.column and err.tag.line and err.tag.severity and err.tag.text and err.tag.text ~= "" then
-    return true
-  end
-  return false
+  return err.tag and err.tag.column and err.tag.line and err.tag.severity and err.tag.text
 end
 
 local function trim_msg_severity(err)
   local pos1, pos2 = string.find(err, ": ")
-  if pos1 then
-    return string.sub(err, pos2 + 1, -1)
-  else
-    return ""
-  end
+  return pos1 and string.sub(err, pos2 + 1, -1) or ""
 end
 
 M.parse_errors = function(stderr, bufnr, offset)
-  -- stderr can be vim.NIL (ex: for golang) which is of type userdata
-  if type(stderr) ~= "table" then
+  if stderr == vim.NIL or stderr == nil then
     return
   end
 
   local conf = config.get_config()
   local ns = api.nvim_create_namespace("ce-diagnostics")
-  vim.diagnostic.config({ underline = false, virtual_text = false, signs = false }, ns)
 
   local diagnostics = {}
   for _, err in ipairs(stderr) do
@@ -54,7 +41,7 @@ M.parse_errors = function(stderr, bufnr, offset)
   end
 
   vim.diagnostic.reset(ns)
-  vim.diagnostic.set(ns, bufnr, diagnostics)
+  vim.diagnostic.set(ns, bufnr, diagnostics, conf.diagnostics)
   vim.diagnostic.setqflist({ namespace = ns, open = conf.open_qflist, title = "Compiler Explorer" })
 end
 
