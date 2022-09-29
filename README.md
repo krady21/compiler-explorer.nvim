@@ -9,7 +9,6 @@ Neovim lua plugin used for interacting with
 
 ## Dependencies
 - [Neovim](https://neovim.io/) >= 0.7
-- [plenary.nvim](https://github.com/nvim-lua/plenary.nvim/) for the curl module
 - [curl](https://curl.se/)
 
 ## Optional dependencies
@@ -21,9 +20,7 @@ Neovim lua plugin used for interacting with
 - [packer](https://github.com/wbthomason/packer.nvim)
 ```lua
 require('packer').startup(function()
-  use {
-    'krady21/compiler-explorer.nvim', requires = { 'nvim-lua/plenary.nvim' }
-  }
+  use {'krady21/compiler-explorer.nvim'}
 end
 ```
 
@@ -31,14 +28,12 @@ end
 ```lua
 require("paq") {
   {'krady21/compiler-explorer.nvim'};
-  {'nvim-lua/plenary.nvim'};
 }
 ```
 
 - [vim-plug](https://github.com/junegunn/vim-plug)
 ```vim
 Plug 'krady21/compiler-explorer.nvim'
-Plug 'nvim-lua/plenary.nvim'
 ```
 
 ## Configuration

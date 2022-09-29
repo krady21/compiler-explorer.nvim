@@ -1,18 +1,6 @@
-local curl = require("plenary.curl")
 local config = require("compiler-explorer.config")
 local async = require("compiler-explorer.async")
-
-local json = vim.json
-
-local post_wrapped = async.wrap(function(url, opts, callback)
-  opts.callback = callback
-  curl.post(url, opts)
-end, 3)
-
-local get_wrapped = async.wrap(function(url, opts, callback)
-  opts.callback = callback
-  curl.get(url, opts)
-end, 3)
+local http = require("compiler-explorer.http")
 
 local M = {}
 
@@ -60,12 +48,14 @@ M.languages_get = async.void(function()
   local conf = config.get_config()
   local url = table.concat({ conf.url, "api", "languages" }, "/")
 
-  local resp = get_wrapped(url, {
-    accept = "application/json",
-  })
+  local status, body = http.get(url)
   async.scheduler()
 
-  M.cache.langs = json.decode(resp.body)
+  if status ~= 200 then
+    error("bad request")
+  end
+
+  M.cache.langs = body
   return M.cache.langs
 end)
 
@@ -73,33 +63,28 @@ M.libraries_get = async.void(function(lang)
   local conf = config.get_config()
   local url = table.concat({ conf.url, "api", "libraries", lang }, "/")
 
-  local resp = get_wrapped(url, {
-    accept = "application/json",
-  })
+  local status, body = http.get(url)
   async.scheduler()
-  if resp.status ~= 200 then
+
+  if status ~= 200 then
     error("bad request")
   end
 
-  local libs = json.decode(resp.body)
-  return libs
+  return body
 end)
 
 M.tooltip_get = async.void(function(arch, instruction)
   local conf = config.get_config()
   local url = table.concat({ conf.url, "api", "asm", arch, instruction }, "/")
 
-  local resp = get_wrapped(url, {
-    accept = "application/json",
-  })
+  local status, body = http.get(url)
   async.scheduler()
 
-  local decoded = json.decode(resp.body)
-  if resp.status ~= 200 then
-    error({ code = resp.status, msg = decoded.error })
+  if status ~= 200 then
+    error({ code = status, msg = body.error })
   end
 
-  return decoded
+  return body
 end)
 
 M.formatters_get = async.void(function()
@@ -109,15 +94,14 @@ M.formatters_get = async.void(function()
   local conf = config.get_config()
   local url = table.concat({ conf.url, "api", "formats" }, "/")
 
-  local resp = get_wrapped(url, {
-    accept = "application/json",
-  })
+  local status, body = http.get(url)
   async.scheduler()
-  if resp.status ~= 200 then
+
+  if status ~= 200 then
     error("bad request")
   end
 
-  M.cache.formatters = json.decode(resp.body)
+  M.cache.formatters = body
   return M.cache.formatters
 end)
 
@@ -135,24 +119,18 @@ function M.create_format_body(formatter_id, source, style)
   }
 end
 
-M.format_post = async.void(function(formatter_id, body)
+M.format_post = async.void(function(formatter_id, req_body)
   local conf = config.get_config()
   local url = table.concat({ conf.url, "api", "format", formatter_id }, "/")
 
-  local resp = post_wrapped(url, {
-    body = json.encode(body),
-    headers = {
-      content_type = "application/json",
-      accept = "application/json",
-    },
-  })
+  local status, body = http.post(url, req_body)
   async.scheduler()
-  if resp.status ~= 200 then
+
+  if status ~= 200 then
     error("bad request")
   end
 
-  local out = json.decode(resp.body)
-  return out
+  return body
 end)
 
 M.compilers_get = async.void(function(lang)
@@ -168,15 +146,14 @@ M.compilers_get = async.void(function(lang)
   local conf = config.get_config()
   local url = table.concat({ conf.url, "api", "compilers" }, "/")
 
-  local resp = get_wrapped(url, {
-    accept = "application/json",
-  })
+  local status, body = http.get(url)
   async.scheduler()
-  if resp.status ~= 200 then
+
+  if status ~= 200 then
     error("bad request")
   end
 
-  M.cache.compilers = json.decode(resp.body)
+  M.cache.compilers = body
   if lang then
     return vim.tbl_filter(function(el)
       return el.lang == lang
@@ -221,58 +198,46 @@ function M.create_compile_body(args)
   return body
 end
 
-M.compile_post = async.void(function(compiler_id, body)
+M.compile_post = async.void(function(compiler_id, req_body)
   local conf = config.get_config()
   local url = table.concat({ conf.url, "api", "compiler", compiler_id, "compile" }, "/")
 
-  local resp = post_wrapped(url, {
-    body = json.encode(body),
-    headers = {
-      content_type = "application/json",
-      accept = "application/json",
-    },
-  })
+  local status, body = http.post(url, req_body)
   async.scheduler()
-  if resp.status ~= 200 then
+
+  if status ~= 200 then
     error("bad request")
   end
 
-  local out = json.decode(resp.body)
-  return out
+  return body
 end)
 
 M.list_examples_get = async.void(function()
   local conf = config.get_config()
   local url = table.concat({ conf.url, "source", "builtin", "list" }, "/")
 
-  local resp = get_wrapped(url, {
-    accept = "application/json",
-  })
+  local status, body = http.get(url)
   async.scheduler()
 
-  if resp.status ~= 200 then
+  if status ~= 200 then
     error("bad request")
   end
 
-  local out = json.decode(resp.body)
-  return out
+  return body
 end)
 
 M.load_example_get = async.void(function(lang, name)
   local conf = config.get_config()
   local url = table.concat({ conf.url, "source", "builtin", "load", lang, name }, "/")
 
-  local resp = get_wrapped(url, {
-    accept = "application/json",
-  })
+  local status, body = http.get(url)
   async.scheduler()
 
-  if resp.status ~= 200 then
+  if status ~= 200 then
     error("bad request")
   end
 
-  local out = json.decode(resp.body)
-  return out
+  return body
 end)
 
 return M
