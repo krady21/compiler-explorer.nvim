@@ -42,7 +42,11 @@ M.parse_errors = function(stderr, bufnr, offset)
 
   vim.diagnostic.reset(ns)
   vim.diagnostic.set(ns, bufnr, diagnostics, conf.diagnostics)
-  vim.diagnostic.setqflist({ namespace = ns, open = conf.open_qflist, title = "Compiler Explorer" })
+  vim.diagnostic.setqflist({
+    namespace = ns,
+    open = conf.open_qflist,
+    title = "Compiler Explorer",
+  })
 end
 
 return M

@@ -11,7 +11,7 @@ INTRODUCTION                                               *compiler-explorer*
 This plugin uses the exposed REST API endpoints provided by compiler-explorer
 in order to allow the user to compile, format and inspect assembly directly
 from neovim. The compiles are done asynchronously, with the help of |vim.loop|
-and the plenary curl module.
+and curl.
 
 ==============================================================================
 COMMANDS                                          *compiler-explorer-commands*
