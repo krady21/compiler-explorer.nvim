@@ -123,6 +123,7 @@ function M.start_spinner()
 end
 
 function M.stop_spinner()
+  api.nvim_echo({ { "", "None" } }, false, {})
   M.timer:stop()
   M.timer:close()
 end
