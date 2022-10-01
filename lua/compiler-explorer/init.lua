@@ -128,6 +128,25 @@ M.compile = async.void(function(opts)
 
   api.nvim_buf_create_user_command(asm_bufnr, "CEShowTooltip", require("compiler-explorer").show_tooltip, {})
   api.nvim_buf_create_user_command(asm_bufnr, "CEGotoLabel", require("compiler-explorer").goto_label, {})
+
+  return args.compiler, args.flags
+end)
+
+-- WARN: Experimental
+M.compile_live = async.void(function(opts)
+  local compiler, flags = M.compile(opts)
+
+  api.nvim_create_autocmd({ "BufWritePost" }, {
+    group = api.nvim_create_augroup("CompilerExplorerLive", { clear = true }),
+    buffer = fn.bufnr("%"),
+    callback = function()
+      M.compile({
+        line1 = 1,
+        line2 = fn.line("$"),
+        fargs = { "compiler=" .. compiler, "flags=" .. flags },
+      })
+    end,
+  })
 end)
 
 M.add_library = async.void(function()

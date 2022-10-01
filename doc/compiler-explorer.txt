@@ -29,8 +29,11 @@ COMMANDS                                          *compiler-explorer-commands*
 :CECompile! {args}      Similar to |:CECompile| but creates a new window insted
                         of using the last one created.
 
-:CEFormat                                                          *:CEFormat*
-                        Format the source code found in the current buffer
+                                                              *:CECompileLive*
+:CECompileLive {args}   Run |:CECompile| after every |BufwritePost| event.
+
+                                                                   *:CEFormat*
+:CEFormat               Format the source code found in the current buffer
                         with a formatter selected by the user.
 
 :CEAddLibrary                                                  *:CEAddLibrary*

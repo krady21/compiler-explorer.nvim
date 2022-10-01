@@ -26,6 +26,23 @@ end, {
   end,
 })
 
+command("CECompileLive", function(opts)
+  require("compiler-explorer").compile_live(opts)
+end, {
+  range = "%",
+  bang = true,
+  nargs = "*",
+  complete = function(arg_lead, _, _)
+    local compile_body = require("compiler-explorer.rest").default_body
+    local list = vim.tbl_keys(compile_body.options.filters)
+    vim.list_extend(list, { "compiler", "flags", "inferLang" })
+
+    return vim.tbl_filter(function(el)
+      return string.sub(el, 1, #arg_lead) == arg_lead
+    end, list)
+  end,
+})
+
 command("CEFormat", function(_)
   require("compiler-explorer").format()
 end, {})

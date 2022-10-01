@@ -50,6 +50,7 @@ Plug 'krady21/compiler-explorer.nvim'
 
 ## Commands
 - CECompile
+- CECompileLive
 - CEFormat
 - CEAddLibrary
 - CELoadExample
