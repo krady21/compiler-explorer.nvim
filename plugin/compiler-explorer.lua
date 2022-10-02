@@ -30,7 +30,6 @@ command("CECompileLive", function(opts)
   require("compiler-explorer").compile_live(opts)
 end, {
   range = "%",
-  bang = true,
   nargs = "*",
   complete = function(arg_lead, _, _)
     local compile_body = require("compiler-explorer.rest").default_body
