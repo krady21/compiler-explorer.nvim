@@ -82,6 +82,7 @@ require("compiler-explorer").setup({
   split = "split", -- How to split the window after the second compile (split/vsplit).
   spinner_frames = { "⣼", "⣹", "⢻", "⠿", "⡟", "⣏", "⣧", "⣶" }, -- Compiling... spinner settings.
   spinner_interval = 100,
+  compiler_flags = "", -- Default flags passed to the compiler.
 })
 ```
 
