@@ -1,6 +1,7 @@
 local alert = require("compiler-explorer.alert")
 local async = require("compiler-explorer.async")
 local autocmd = require("compiler-explorer.autocmd")
+local clientstate = require("compiler-explorer.clientstate")
 local config = require("compiler-explorer.config")
 local rest = require("compiler-explorer.rest")
 local stderr = require("compiler-explorer.stderr")
@@ -123,6 +124,8 @@ M.compile = async.void(function(opts)
     autocmd.create_autocmd(source_bufnr, asm_bufnr, response.asm, opts.line1 - 1)
   end
 
+  clientstate.save_info(source_bufnr, asm_bufnr, body)
+
   api.nvim_buf_set_var(asm_bufnr, "arch", compiler.instructionSet) -- used by show_tooltips
   api.nvim_buf_set_var(asm_bufnr, "labels", response.labelDefinitions) -- used by goto_label
 
@@ -131,6 +134,21 @@ M.compile = async.void(function(opts)
 
   return args.compiler, args.flags
 end)
+
+-- WARN: Experimental
+M.open_website = function()
+  local conf = config.get_config()
+  local state = clientstate.create()
+  if state == nil then
+    alert.warn("No compiler configurations were found. Run :CECompile before this.")
+    return
+  end
+  local url = table.concat({ conf.url, "clientstate", state }, "/")
+  if fn.has("unix") ~= 1 then
+    alert.warn("CEOpenWebsite is not supported on your platform.")
+  end
+  vim.cmd("silent !xdg-open " .. url)
+end
 
 -- WARN: Experimental
 M.compile_live = async.void(function(opts)
