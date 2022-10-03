@@ -44,6 +44,11 @@ COMMANDS                                          *compiler-explorer-commands*
 :CELoadExample                                                *:CELoadExample*
                         Load an existing code example to a new tab.
 
+                                                             *:CEOpenWebsite!*
+:CEOpenWebsite          Open the website with the local source code and
+                        compiler configurations. Works with multiple source
+                        code windows.
+                        
 
 These commands are local to the assembly output buffers.
 

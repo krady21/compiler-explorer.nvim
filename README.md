@@ -47,6 +47,7 @@ Plug 'krady21/compiler-explorer.nvim'
 - Show tooltips about specific instructions.
 - Jump to label definitions.
 - Load example code.
+- Open the website with the local state (source code and compilers).
 
 ## Commands
 - CECompile
@@ -54,6 +55,7 @@ Plug 'krady21/compiler-explorer.nvim'
 - CEFormat
 - CEAddLibrary
 - CELoadExample
+- CEOpenWebsite
 - CEShowTooltip (local to assembly buffer)
 - CEGotoLabel (local to assembly buffer)
 
@@ -97,10 +99,11 @@ require("compiler-explorer").setup({
 - [x] `GET  /api/asm/<instruction-set>/<instruction>`
 - [x] `GET  /source/builtin/list`
 - [x] `GET  /source/builtin/load/<lang-id>/<example-id>`
+- [x] `GET  /clientstate/<base64>`
 
 ## Related projects
 - [godbolt.nvim](https://github.com/p00f/godbolt.nvim)
 
 ## Inspiration
-The async.lua and alert.lua modules are inspired from
-[gitsigns.nvim](https://github.com/lewis6991/gitsigns.nvim) .
+- The async.lua and alert.lua modules are inspired from [gitsigns.nvim](https://github.com/lewis6991/gitsigns.nvim) .
+- The base64.lua module is taken from [lbase64](https://github.com/iskolbin/lbase64)

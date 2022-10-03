@@ -53,3 +53,7 @@ end, {})
 command("CELoadExample", function(_)
   require("compiler-explorer").load_example()
 end, {})
+
+command("CEOpenWebsite", function(_)
+  require("compiler-explorer").open_website()
+end, {})
