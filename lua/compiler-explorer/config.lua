@@ -17,6 +17,7 @@ M.defaults = {
   split = "split", -- How to split the window after the second compile (split/vsplit).
   spinner_frames = { "⣼", "⣹", "⢻", "⠿", "⡟", "⣏", "⣧", "⣶" },
   spinner_interval = 100,
+  compiler_flags = "",
 }
 
 M._config = M.defaults

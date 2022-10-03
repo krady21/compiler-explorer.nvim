@@ -83,7 +83,7 @@ M.compile = async.void(function(opts)
     })
 
     -- Choose compiler options
-    args.flags = vim_input()({ prompt = "Select compiler options> " })
+    args.flags = vim_input()({ prompt = "Select compiler options> ", default = conf.compiler_flags })
     args.compiler = compiler.id
   end
 
