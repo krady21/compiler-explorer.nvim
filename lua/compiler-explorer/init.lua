@@ -143,7 +143,7 @@ M.compile_live = async.void(function(opts)
       M.compile({
         line1 = 1,
         line2 = fn.line("$"),
-        fargs = { "compiler=" .. compiler, "flags=" .. flags },
+        fargs = { "compiler=" .. compiler, flags and "flags=" .. flags },
       })
     end,
   })
