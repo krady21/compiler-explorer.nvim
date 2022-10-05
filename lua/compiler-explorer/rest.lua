@@ -33,18 +33,7 @@ M.default_body = {
   },
 }
 
-M.cache = {
-  langs = {},
-  compilers = {},
-  libs = {},
-  formatters = {},
-}
-
 M.languages_get = async.void(function()
-  if not vim.tbl_isempty(M.cache.langs) then
-    return M.cache.langs
-  end
-
   local conf = config.get_config()
   local url = table.concat({ conf.url, "api", "languages" }, "/")
 
@@ -55,8 +44,7 @@ M.languages_get = async.void(function()
     error("bad request")
   end
 
-  M.cache.langs = body
-  return M.cache.langs
+  return body
 end)
 
 M.libraries_get = async.void(function(lang)
@@ -88,9 +76,6 @@ M.tooltip_get = async.void(function(arch, instruction)
 end)
 
 M.formatters_get = async.void(function()
-  if not vim.tbl_isempty(M.cache.formatters) then
-    return M.cache.formatters
-  end
   local conf = config.get_config()
   local url = table.concat({ conf.url, "api", "formats" }, "/")
 
@@ -101,8 +86,7 @@ M.formatters_get = async.void(function()
     error("bad request")
   end
 
-  M.cache.formatters = body
-  return M.cache.formatters
+  return body
 end)
 
 function M.create_format_body(formatter_id, source, style)
@@ -134,15 +118,6 @@ M.format_post = async.void(function(formatter_id, req_body)
 end)
 
 M.compilers_get = async.void(function(lang)
-  if not vim.tbl_isempty(M.cache.compilers) then
-    if lang then
-      return vim.tbl_filter(function(el)
-        return el.lang == lang
-      end, M.cache.compilers)
-    end
-    return M.cache.compilers
-  end
-
   local conf = config.get_config()
   local url = table.concat({ conf.url, "api", "compilers" }, "/")
 
@@ -153,13 +128,12 @@ M.compilers_get = async.void(function(lang)
     error("bad request")
   end
 
-  M.cache.compilers = body
   if lang then
     return vim.tbl_filter(function(el)
       return el.lang == lang
-    end, M.cache.compilers)
+    end, body)
   end
-  return M.cache.compilers
+  return body
 end)
 
 local function body_from_args(args)
