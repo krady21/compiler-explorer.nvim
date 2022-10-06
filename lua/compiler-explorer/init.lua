@@ -12,10 +12,10 @@ local api, fn = vim.api, vim.fn
 local M = {}
 
 -- Return a function to avoid caching the vim.ui functions
-local vim_select = function()
+local get_select = function()
   return async.wrap(vim.ui.select, 3)
 end
-local vim_input = function()
+local get_input = function()
   return async.wrap(vim.ui.input, 2)
 end
 
@@ -26,6 +26,8 @@ end
 M.compile = async.void(function(opts)
   local conf = config.get_config()
   local args = util.parse_args(opts.fargs)
+  local vim_select = get_select()
+  local vim_input = get_input()
 
   -- Get window handle of the source code window.
   local source_winnr = api.nvim_get_current_win()
@@ -66,7 +68,7 @@ M.compile = async.void(function(opts)
       lang = possible_langs[1]
     else
       -- Choose language
-      lang = vim_select()(possible_langs, {
+      lang = vim_select(possible_langs, {
         prompt = "Select language> ",
         format_item = function(item)
           return item.name
@@ -76,7 +78,7 @@ M.compile = async.void(function(opts)
 
     -- Choose compiler
     local compilers = rest.compilers_get(lang.id)
-    compiler = vim_select()(compilers, {
+    compiler = vim_select(compilers, {
       prompt = "Select compiler> ",
       format_item = function(item)
         return item.name
@@ -84,7 +86,7 @@ M.compile = async.void(function(opts)
     })
 
     -- Choose compiler options
-    args.flags = vim_input()({ prompt = "Select compiler options> ", default = conf.compiler_flags })
+    args.flags = vim_input({ prompt = "Select compiler options> ", default = conf.compiler_flags })
     args.compiler = compiler.id
   end
 
@@ -168,6 +170,7 @@ M.compile_live = async.void(function(opts)
 end)
 
 M.add_library = async.void(function()
+  local vim_select = get_select()
   local lang_list = rest.languages_get()
 
   -- Infer language based on extension and prompt user.
@@ -187,7 +190,7 @@ M.add_library = async.void(function()
     lang = possible_langs[1]
   else
     -- Choose language
-    lang = vim_select()(possible_langs, {
+    lang = vim_select(possible_langs, {
       prompt = "Select language> ",
       format_item = function(item)
         return item.name
@@ -202,7 +205,7 @@ M.add_library = async.void(function()
   end
 
   -- Choose library
-  local lib = vim_select()(libs, {
+  local lib = vim_select(libs, {
     prompt = "Select library> ",
     format_item = function(item)
       return item.name
@@ -210,7 +213,7 @@ M.add_library = async.void(function()
   })
 
   -- Choose version
-  local version = vim_select()(lib.versions, {
+  local version = vim_select(lib.versions, {
     prompt = "Select library version> ",
     format_item = function(item)
       return item.version
@@ -224,13 +227,14 @@ M.add_library = async.void(function()
 end)
 
 M.format = async.void(function()
+  local vim_select = get_select()
   -- Get contents of current buffer
   local buf_contents = api.nvim_buf_get_lines(0, 0, -1, false)
   local source = table.concat(buf_contents, "\n")
 
   -- Select formatter
   local formatters = rest.formatters_get()
-  local formatter = vim_select()(formatters, {
+  local formatter = vim_select(formatters, {
     prompt = "Select formatter> ",
     format_item = function(item)
       return item.name
@@ -239,7 +243,7 @@ M.format = async.void(function()
 
   local style = formatter.styles[1] or "__DefaultStyle"
   if #formatter.styles > 0 then
-    style = vim_select()(formatter.styles, {
+    style = vim_select(formatter.styles, {
       prompt = "Select formatter style> ",
       format_item = function(item)
         return item
@@ -291,6 +295,7 @@ M.goto_label = function()
 end
 
 M.load_example = async.void(function()
+  local vim_select = get_select()
   local examples = rest.list_examples_get()
 
   local examples_by_lang = {}
@@ -305,14 +310,14 @@ M.load_example = async.void(function()
   local langs = vim.tbl_keys(examples_by_lang)
   table.sort(langs)
 
-  local lang_id = vim_select()(langs, {
+  local lang_id = vim_select(langs, {
     prompt = "Select language> ",
     format_item = function(item)
       return item
     end,
   })
 
-  local example = vim_select()(examples_by_lang[lang_id], {
+  local example = vim_select(examples_by_lang[lang_id], {
     prompt = "Select example> ",
     format_item = function(item)
       return item.name
