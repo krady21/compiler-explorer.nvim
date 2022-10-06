@@ -16,9 +16,18 @@ end, {
   bang = true,
   nargs = "*",
   complete = function(arg_lead, _, _)
-    local compile_body = require("compiler-explorer.rest").default_body
-    local list = vim.tbl_keys(compile_body.options.filters)
-    vim.list_extend(list, { "compiler", "flags", "inferLang" })
+    local list
+    if vim.startswith(arg_lead, "compiler=") then
+      local extension = "." .. vim.fn.expand("%:e")
+      local compilers = require("compiler-explorer.cache").get_compilers(extension)
+      list = vim.tbl_map(function(c)
+        return [[compiler=]] .. c.id
+      end, compilers)
+    else
+      local compile_body = require("compiler-explorer.rest").default_body
+      list = vim.tbl_keys(compile_body.options.filters)
+      vim.list_extend(list, { "compiler", "flags", "inferLang" })
+    end
 
     return vim.tbl_filter(function(el)
       return string.sub(el, 1, #arg_lead) == arg_lead
@@ -32,9 +41,18 @@ end, {
   range = "%",
   nargs = "*",
   complete = function(arg_lead, _, _)
-    local compile_body = require("compiler-explorer.rest").default_body
-    local list = vim.tbl_keys(compile_body.options.filters)
-    vim.list_extend(list, { "compiler", "flags", "inferLang" })
+    local list
+    if vim.startswith(arg_lead, "compiler=") then
+      local extension = "." .. vim.fn.expand("%:e")
+      local compilers = require("compiler-explorer.cache").get_compilers(extension)
+      list = vim.tbl_map(function(c)
+        return [[compiler=]] .. c.id
+      end, compilers)
+    else
+      local compile_body = require("compiler-explorer.rest").default_body
+      list = vim.tbl_keys(compile_body.options.filters)
+      vim.list_extend(list, { "compiler", "flags", "inferLang" })
+    end
 
     return vim.tbl_filter(function(el)
       return string.sub(el, 1, #arg_lead) == arg_lead
@@ -59,5 +77,5 @@ command("CEOpenWebsite", function(_)
 end, {})
 
 command("CEDeleteCache", function(_)
-  require("compiler-explorer.http").delete_cache()
+  require("compiler-explorer.cache").delete_cache()
 end, {})
