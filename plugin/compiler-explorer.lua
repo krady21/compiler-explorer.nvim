@@ -57,3 +57,7 @@ end, {})
 command("CEOpenWebsite", function(_)
   require("compiler-explorer").open_website()
 end, {})
+
+command("CEDeleteCache", function(_)
+  require("compiler-explorer.http").delete_cache()
+end, {})

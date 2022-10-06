@@ -99,4 +99,10 @@ M.post = async.void(function(url, body)
   return status, resp
 end)
 
+M.delete_cache = function()
+  cache.in_memory = {}
+  os.remove(fn.stdpath("cache") .. "/compiler-explorer-cache.json")
+  alert.info("Cache file has been deleted.")
+end
+
 return M

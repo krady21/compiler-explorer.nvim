@@ -56,6 +56,7 @@ Plug 'krady21/compiler-explorer.nvim'
 - CEAddLibrary
 - CELoadExample
 - CEOpenWebsite
+- CEDeleteCache
 - CEShowTooltip (local to assembly buffer)
 - CEGotoLabel (local to assembly buffer)
 
