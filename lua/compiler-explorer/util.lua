@@ -1,5 +1,4 @@
 local config = require("compiler-explorer.config")
-local rest = require("compiler-explorer.rest")
 
 local uv = vim.loop
 local api, fn = vim.api, vim.fn
@@ -61,22 +60,6 @@ function M.set_binary_extmarks(lines, bufnr)
       })
     end
   end
-end
-
-function M.check_compiler(compiler_id)
-  if compiler_id == nil or type(compiler_id) ~= "string" then
-    return nil
-  end
-
-  local compilers = rest.compilers_get()
-  local filtered = vim.tbl_filter(function(compiler)
-    return compiler.id == compiler_id
-  end, compilers)
-
-  if vim.tbl_isempty(filtered) then
-    error("incorrect compiler id")
-  end
-  return filtered[1]
 end
 
 local function to_bool(s)

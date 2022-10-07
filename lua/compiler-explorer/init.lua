@@ -39,7 +39,7 @@ M.compile = async.void(function(opts)
   local buf_contents = api.nvim_buf_get_lines(source_bufnr, opts.line1 - 1, opts.line2, false)
   args.source = table.concat(buf_contents, "\n")
 
-  local ok, compiler = pcall(util.check_compiler, args.compiler)
+  local ok, compiler = pcall(rest.check_compiler, args.compiler)
   if not ok then
     alert.error("Could not compile code with compiler id %s", args.compiler)
     return
@@ -92,9 +92,11 @@ M.compile = async.void(function(opts)
 
   -- Compile
   local body = rest.create_compile_body(args)
-  util.start_spinner()
-  local response = rest.compile_post(compiler.id, body)
-  util.stop_spinner()
+  local ok, response = pcall(rest.compile_post, compiler.id, body)
+
+  if not ok then
+    error(response)
+  end
 
   local asm_lines = vim.tbl_map(function(line)
     return line.text

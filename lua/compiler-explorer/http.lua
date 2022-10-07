@@ -1,6 +1,5 @@
 local cache = require("compiler-explorer.cache")
 local job = require("compiler-explorer.job")
-local alert = require("compiler-explorer.alert")
 local async = require("compiler-explorer.async")
 
 local json = vim.json
@@ -15,14 +14,20 @@ M.get = async.void(function(url)
 
   local args = { "-X", "GET", "-H", "Accept: application/json", "-w", [[\n%{http_code}\n]], url }
 
-  local exit, stdout, stderr = job.start("curl", args)
-  if exit ~= 0 then
-    local cmd = table.concat({ "curl", unpack(args) }, " ")
-    alert.error("curl error:\ncommand: %s\nexit_code: %d\nstderr: %s", cmd, exit, stderr)
-    return
+  local ret = job.start("curl", args)
+  async.scheduler()
+  if ret.exit ~= 0 then
+    error(("curl error:\ncommand: %s\nexit_code: %d\nstderr: %s"):format(ret.cmd, ret.exit, ret.stderr))
   end
 
-  local split = vim.split(stdout, "\n")
+  if ret.signal == 9 then
+    error("SIGKILL: curl command timed out")
+  end
+
+  local split = vim.split(ret.stdout, "\n")
+  if #split < 2 then
+    error([[curl response does not follow the <body \n\n status_code> pattern]])
+  end
   local resp, status = json.decode(split[1]), tonumber(split[2])
   if status == 200 then
     cache.get()[url] = resp
@@ -46,14 +51,20 @@ M.post = async.void(function(url, body)
     url,
   }
 
-  local exit, stdout, stderr = job.start("curl", args)
-  if exit ~= 0 then
-    local cmd = table.concat({ "curl", unpack(args) }, " ")
-    alert.error("curl error:\n command: %s \n exit_code %d\n stderr: %s", cmd, exit, stderr)
-    return
+  local ret = job.start("curl", args)
+  async.scheduler()
+  if ret.exit ~= 0 then
+    error(("curl error:\n command: %s \n exit_code %d\n stderr: %s"):format(ret.cmd, ret.exit, ret.stderr))
   end
 
-  local split = vim.split(stdout, "\n")
+  if ret.signal == 9 then
+    error("SIGKILL: curl command timed out")
+  end
+
+  local split = vim.split(ret.stdout, "\n")
+  if #split < 2 then
+    error([[curl response does not follow the <body \n\n status_code> pattern]])
+  end
   local resp, status = json.decode(split[1]), tonumber(split[2])
   return status, resp
 end)

@@ -1,6 +1,6 @@
 local config = require("compiler-explorer.config")
-local async = require("compiler-explorer.async")
 local http = require("compiler-explorer.http")
+local util = require("compiler-explorer.util")
 
 local M = {}
 
@@ -33,61 +33,53 @@ M.default_body = {
   },
 }
 
-M.languages_get = async.void(function()
+M.languages_get = function()
   local conf = config.get_config()
   local url = table.concat({ conf.url, "api", "languages" }, "/")
 
   local status, body = http.get(url)
-  async.scheduler()
-
   if status ~= 200 then
-    error("bad request")
+    error(("HTTP request returned status code %d."):format(status))
   end
 
   return body
-end)
+end
 
-M.libraries_get = async.void(function(lang)
+M.libraries_get = function(lang)
   local conf = config.get_config()
   local url = table.concat({ conf.url, "api", "libraries", lang }, "/")
 
   local status, body = http.get(url)
-  async.scheduler()
-
   if status ~= 200 then
-    error("bad request")
+    error(("HTTP request returned status code %d."):format(status))
   end
 
   return body
-end)
+end
 
-M.tooltip_get = async.void(function(arch, instruction)
+M.tooltip_get = function(arch, instruction)
   local conf = config.get_config()
   local url = table.concat({ conf.url, "api", "asm", arch, instruction }, "/")
 
   local status, body = http.get(url)
-  async.scheduler()
-
   if status ~= 200 then
     error({ code = status, msg = body.error })
   end
 
   return body
-end)
+end
 
-M.formatters_get = async.void(function()
+M.formatters_get = function()
   local conf = config.get_config()
   local url = table.concat({ conf.url, "api", "formats" }, "/")
 
   local status, body = http.get(url)
-  async.scheduler()
-
   if status ~= 200 then
-    error("bad request")
+    error(("HTTP request returned status code %d."):format(status))
   end
 
   return body
-end)
+end
 
 function M.create_format_body(formatter_id, source, style)
   vim.validate({
@@ -103,29 +95,25 @@ function M.create_format_body(formatter_id, source, style)
   }
 end
 
-M.format_post = async.void(function(formatter_id, req_body)
+M.format_post = function(formatter_id, req_body)
   local conf = config.get_config()
   local url = table.concat({ conf.url, "api", "format", formatter_id }, "/")
 
   local status, body = http.post(url, req_body)
-  async.scheduler()
-
   if status ~= 200 then
-    error("bad request")
+    error(("HTTP request returned status code %d."):format(status))
   end
 
   return body
-end)
+end
 
-M.compilers_get = async.void(function(lang)
+M.compilers_get = function(lang)
   local conf = config.get_config()
   local url = table.concat({ conf.url, "api", "compilers" }, "/")
 
   local status, body = http.get(url)
-  async.scheduler()
-
   if status ~= 200 then
-    error("bad request")
+    error(("HTTP request returned status code %d."):format(status))
   end
 
   if lang then
@@ -134,7 +122,7 @@ M.compilers_get = async.void(function(lang)
     end, body)
   end
   return body
-end)
+end
 
 local function body_from_args(args)
   local body = vim.deepcopy(M.default_body)
@@ -172,46 +160,61 @@ function M.create_compile_body(args)
   return body
 end
 
-M.compile_post = async.void(function(compiler_id, req_body)
+M.compile_post = function(compiler_id, req_body)
   local conf = config.get_config()
   local url = table.concat({ conf.url, "api", "compiler", compiler_id, "compile" }, "/")
 
-  local status, body = http.post(url, req_body)
-  async.scheduler()
+  util.start_spinner()
+  local ok, status, body = pcall(http.post, url, req_body)
+  util.stop_spinner()
 
-  if status ~= 200 then
-    error("bad request")
+  if not ok then
+    error(status)
   end
 
+  if status ~= 200 then
+    error(("HTTP request returned status code %d."):format(status))
+  end
   return body
-end)
+end
 
-M.list_examples_get = async.void(function()
+M.list_examples_get = function()
   local conf = config.get_config()
   local url = table.concat({ conf.url, "source", "builtin", "list" }, "/")
 
   local status, body = http.get(url)
-  async.scheduler()
-
   if status ~= 200 then
-    error("bad request")
+    error(("HTTP request returned status code %d."):format(status))
   end
-
   return body
-end)
+end
 
-M.load_example_get = async.void(function(lang, name)
+M.load_example_get = function(lang, name)
   local conf = config.get_config()
   local url = table.concat({ conf.url, "source", "builtin", "load", lang, name }, "/")
 
   local status, body = http.get(url)
-  async.scheduler()
-
   if status ~= 200 then
-    error("bad request")
+    error(("HTTP request returned status code %d."):format(status))
   end
 
   return body
-end)
+end
+
+function M.check_compiler(compiler_id)
+  if compiler_id == nil or type(compiler_id) ~= "string" then
+    return nil
+  end
+
+  local compilers = M.compilers_get()
+  local filtered = vim.tbl_filter(function(compiler)
+    return compiler.id == compiler_id
+  end, compilers)
+
+  if vim.tbl_isempty(filtered) then
+    error("incorrect compiler id")
+  end
+  return filtered[1]
+end
 
 return M

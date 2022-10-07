@@ -71,7 +71,7 @@ end
 
 M.delete_cache = function()
   cache.in_memory = {}
-  os.remove(fn.stdpath("cache") .. "/compiler-explorer-cache.json")
+  os.remove(cache.filename)
   alert.info("Cache file has been deleted.")
 end
 

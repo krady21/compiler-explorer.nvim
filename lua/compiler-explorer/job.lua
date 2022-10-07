@@ -4,11 +4,20 @@ local uv = vim.loop
 
 local M = {}
 
+local timeout = 20000 -- 20 seconds
+
 local function close_pipes(...)
   for _, pipe in ipairs({ ... }) do
     if not pipe:is_closing() then
       pipe:close()
     end
+  end
+end
+
+local function close_timer(timer)
+  timer:stop()
+  if not timer:is_closing() then
+    timer:close()
   end
 end
 
@@ -23,12 +32,15 @@ local spawn = function(cmd, args, cb)
   local stderr = uv.new_pipe()
 
   local stdout_data, stderr_data = {}, {}
+  local full_cmd = table.concat({ "curl", unpack(args) }, " ")
 
-  M.handle, _ = uv.spawn(cmd, {
+  local handle, timer
+  handle, _ = uv.spawn(cmd, {
     args = args,
     stdio = { nil, stdout, stderr },
-  }, function(code, _)
-    M.handle:close()
+  }, function(code, signal)
+    close_timer(timer)
+    handle:close()
 
     read_stop_pipes(stdout, stderr)
     close_pipes(stdout, stderr)
@@ -36,13 +48,24 @@ local spawn = function(cmd, args, cb)
     local stdout_result = table.concat(stdout_data)
     local stderr_result = table.concat(stderr_data)
 
-    cb(code, stdout_result, stderr_result)
+    cb({
+      cmd = full_cmd,
+      exit = code,
+      signal = signal,
+      stdout = stdout_result,
+      stderr = stderr_result,
+    })
   end)
 
-  if not M.handle then
+  if not handle then
     close_pipes(stdout, stderr)
     error(("Failed to start the process: %s"):format(table.concat({ cmd, unpack(args) }, " ")))
   end
+
+  timer = uv.new_timer()
+  timer:start(timeout, 0, function()
+    handle:kill("sigkill")
+  end)
 
   stdout:read_start(function(_, data)
     table.insert(stdout_data, data)
