@@ -60,6 +60,22 @@ Plug 'krady21/compiler-explorer.nvim'
 - CEShowTooltip (local to assembly buffer)
 - CEGotoLabel (local to assembly buffer)
 
+### Examples
+- `:CECompile` will prompt the user to select the compiler and flags
+  interactively using `vim.ui.select` and `vim.ui.input`.
+- `:CECompile compiler=g121 flags=-O2 flags=-Wall` specify the
+  compiler and flags as command arguments.
+- `':<,'>CECompile` will compile a visual selection.
+- `:CECompile!` will open the assembly output in a new window. Not using
+  bang(!) will reuse the last assembly window.
+- `:CECompile inferLang=false` do not infer possible language (based on file
+  extension).
+- `:CECompile binary=true` show binary opcodes and address using virtual text.
+- `:CECompile intel=false` use AT&T syntax instead of intel.
+- `:CECompileLive` creates an autcommand that runs `:CECompile` every time
+  the buffer is saved (`BufWritePost`).
+  
+
 ## Configuration
 [compiler-explorer.nvim](https://github.com/krady21/compiler-explorer.nvim)
 works out of the box without configuration. If you want to change some of its
@@ -86,6 +102,7 @@ require("compiler-explorer").setup({
   spinner_frames = { "⣼", "⣹", "⢻", "⠿", "⡟", "⣏", "⣧", "⣶" }, -- Compiling... spinner settings.
   spinner_interval = 100,
   compiler_flags = "", -- Default flags passed to the compiler.
+  job_timeout = 25000, -- Timeout for libuv job in milliseconds.
 })
 ```
 

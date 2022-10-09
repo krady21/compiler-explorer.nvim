@@ -1,10 +1,9 @@
 local async = require("compiler-explorer.async")
+local config = require("compiler-explorer.config")
 
 local uv = vim.loop
 
 local M = {}
-
-local timeout = 20000 -- 20 seconds
 
 local function close_pipes(...)
   for _, pipe in ipairs({ ... }) do
@@ -28,6 +27,7 @@ local function read_stop_pipes(...)
 end
 
 local spawn = function(cmd, args, cb)
+  local conf = config.get_config()
   local stdout = uv.new_pipe()
   local stderr = uv.new_pipe()
 
@@ -63,7 +63,7 @@ local spawn = function(cmd, args, cb)
   end
 
   timer = uv.new_timer()
-  timer:start(timeout, 0, function()
+  timer:start(conf.job_timeout, 0, function()
     handle:kill("sigkill")
   end)
 

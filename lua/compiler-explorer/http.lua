@@ -12,7 +12,15 @@ M.get = async.void(function(url)
     return 200, data
   end
 
-  local args = { "-X", "GET", "-H", "Accept: application/json", "-w", [[\n%{http_code}\n]], url }
+  local args = {
+    "-X",
+    "GET",
+    "-H",
+    "Accept: application/json",
+    "-w",
+    [[\n%{http_code}\n]],
+    url,
+  }
 
   local ret = job.start("curl", args)
   async.scheduler()
@@ -50,7 +58,6 @@ M.post = async.void(function(url, body)
     [[\n%{http_code}\n]],
     url,
   }
-
   local ret = job.start("curl", args)
   async.scheduler()
   if ret.exit ~= 0 then

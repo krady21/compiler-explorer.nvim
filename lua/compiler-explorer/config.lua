@@ -18,6 +18,7 @@ M.defaults = {
   spinner_frames = { "⣼", "⣹", "⢻", "⠿", "⡟", "⣏", "⣧", "⣶" },
   spinner_interval = 100,
   compiler_flags = "",
+  job_timeout = 25000, -- Timeout for libuv job in milliseconds.
 }
 
 M._config = M.defaults
