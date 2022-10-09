@@ -340,7 +340,12 @@ M.load_example = async.void(function()
   api.nvim_buf_set_name(0, bufname)
   api.nvim_buf_set_option(0, "bufhidden", "wipe")
 
-  vim.filetype.match(bufname, 0)
+  if fn.has("nvim-0.8") then
+    local ft = vim.filetype.match({ filename = bufname })
+    api.nvim_buf_set_option(0, "filetype", ft)
+  else
+    vim.filetype.match(bufname, 0)
+  end
 end)
 
 return M
