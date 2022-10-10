@@ -3,43 +3,36 @@ local config = require("compiler-explorer.config")
 local uv = vim.loop
 local api, fn = vim.api, vim.fn
 
-local last_buffer_name = nil
-
 local M = {}
 
 -- Creates a new buffer and window or uses the previous one.
 function M.create_window_buffer(compiler_id, new_window)
   local conf = config.get_config()
 
-  -- If this is the first compile or bang was used in the compile command.
-  local name
-  if new_window or last_buffer_name == nil then
-    name = table.concat({ "asm", compiler_id, math.random(100) }, "-")
-    last_buffer_name = name
-  else
-    name = last_buffer_name
+  local windows = fn.winnr("$")
+  if windows == 1 then
+    new_window = true
   end
 
-  local asm_bufnr = fn.bufnr(name)
-  if asm_bufnr == -1 then
-    asm_bufnr = api.nvim_create_buf(false, true)
-    api.nvim_buf_set_name(asm_bufnr, name)
-    api.nvim_buf_set_option(asm_bufnr, "ft", "asm")
-    api.nvim_buf_set_option(asm_bufnr, "bufhidden", "wipe")
-  end
-
-  -- If the buffer is not associated with any window, create a new window.
-  if fn.bufwinnr(asm_bufnr) == -1 then
-    if #api.nvim_list_wins() == 1 then
+  if new_window then
+    if windows == 1 then
       vim.cmd("vsplit")
     else
-      vim.cmd("wincmd b")
+      vim.cmd("wincmd l")
       vim.cmd(conf.split)
     end
-
-    local win = api.nvim_get_current_win()
-    api.nvim_win_set_buf(win, asm_bufnr)
+  else
+    vim.cmd("wincmd l")
   end
+
+  local asm_bufnr = api.nvim_create_buf(false, true)
+  local name = "compiler-explorer://" .. compiler_id .. "-" .. math.random(100)
+  api.nvim_buf_set_name(asm_bufnr, name)
+  api.nvim_buf_set_option(asm_bufnr, "ft", "asm")
+  api.nvim_buf_set_option(asm_bufnr, "bufhidden", "wipe")
+
+  local win = api.nvim_get_current_win()
+  api.nvim_win_set_buf(win, asm_bufnr)
 
   return asm_bufnr
 end
