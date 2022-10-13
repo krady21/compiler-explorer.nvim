@@ -1,8 +1,17 @@
 local config = require("compiler-explorer.config")
 
 local api, fn = vim.api, vim.fn
+local hi = vim.highlight
 
 local M = {}
+
+local function highlight_line(bufnr, linenr, ns, higroup)
+  if fn.has("nvim-0.8") then
+    hi.range(bufnr, ns, higroup, { linenr, 0 }, { linenr, 3000 }, { inclusive = true, regtype = "linewise" })
+  else
+    hi.range(bufnr, ns, higroup, { linenr, 0 }, { linenr, -1 }, "linewise", true)
+  end
+end
 
 local function create_linehl_dict(asm, offset)
   local source_to_asm, asm_to_source = {}, {}
@@ -22,12 +31,13 @@ local function create_linehl_dict(asm, offset)
 end
 
 M.create_autocmd = function(source_bufnr, asm_bufnr, resp, offset)
-  local conf = config.get_config()
   local source_to_asm, asm_to_source = create_linehl_dict(resp, offset)
   if vim.tbl_isempty(source_to_asm) or vim.tbl_isempty(asm_to_source) then
     return
   end
 
+  local conf = config.get_config()
+  local hl_group = conf.autocmd.hl
   local gid = api.nvim_create_augroup("CompilerExplorer", { clear = true })
   local ns = api.nvim_create_namespace("ce-autocmds")
 
@@ -41,9 +51,12 @@ M.create_autocmd = function(source_bufnr, asm_bufnr, resp, offset)
       local hl_list = source_to_asm[line_nr]
       if hl_list then
         for _, hl in ipairs(hl_list) do
-          vim.highlight.range(asm_bufnr, ns, conf.autocmd.hl, { hl - 1, 0 }, { hl - 1, -1 }, "linewise", true)
+          highlight_line(asm_bufnr, hl - 1, ns, hl_group)
         end
-        api.nvim_win_set_cursor(fn.bufwinid(asm_bufnr), { hl_list[1], 0 })
+        local winid = fn.bufwinid(asm_bufnr)
+        if winid ~= -1 then
+          api.nvim_win_set_cursor(winid, { hl_list[1], 0 })
+        end
       end
     end,
   })
@@ -57,8 +70,12 @@ M.create_autocmd = function(source_bufnr, asm_bufnr, resp, offset)
       local line_nr = fn.line(".")
       local hl = asm_to_source[line_nr]
       if hl then
-        vim.highlight.range(source_bufnr, ns, conf.autocmd.hl, { hl - 1, 0 }, { hl - 1, -1 }, "linewise", true)
-        api.nvim_win_set_cursor(fn.bufwinid(source_bufnr), { hl, 0 })
+        highlight_line(source_bufnr, hl - 1, ns, hl_group)
+
+        local winid = fn.bufwinid(source_bufnr)
+        if winid ~= -1 then
+          api.nvim_win_set_cursor(winid, { hl, 0 })
+        end
       end
     end,
   })
