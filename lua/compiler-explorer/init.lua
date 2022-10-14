@@ -141,16 +141,19 @@ end)
 
 -- WARN: Experimental
 M.open_website = function()
+  if fn.has("unix") ~= 1 then
+    alert.warn("CEOpenWebsite is not supported on your platform.")
+    return
+  end
+
   local conf = config.get_config()
   local state = clientstate.create()
   if state == nil then
     alert.warn("No compiler configurations were found. Run :CECompile before this.")
     return
   end
+
   local url = table.concat({ conf.url, "clientstate", state }, "/")
-  if fn.has("unix") ~= 1 then
-    alert.warn("CEOpenWebsite is not supported on your platform.")
-  end
   vim.cmd("silent !xdg-open " .. url)
 end
 
