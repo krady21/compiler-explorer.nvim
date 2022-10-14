@@ -81,12 +81,7 @@ M.formatters_get = function()
   return body
 end
 
-function M.create_format_body(formatter_id, source, style)
-  vim.validate({
-    source = { source, "string" },
-    formatter_id = { formatter_id, "string" },
-  })
-
+function M.create_format_body(source, style)
   return {
     base = style,
     source = source,

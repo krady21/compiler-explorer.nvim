@@ -256,7 +256,7 @@ M.format = async.void(function()
     })
   end
 
-  local body = rest.create_format_body(formatter.type, source, style)
+  local body = rest.create_format_body(source, style)
   local out = rest.format_post(formatter.type, body)
 
   if out.exit ~= 0 then
