@@ -38,13 +38,17 @@ M.create_autocmd = function(source_bufnr, asm_bufnr, resp, offset)
 
   local conf = config.get_config()
   local hl_group = conf.autocmd.hl
-  local gid = api.nvim_create_augroup("CompilerExplorer", { clear = true })
+  local gid = api.nvim_create_augroup("CompilerExplorer" .. asm_bufnr, { clear = true })
   local ns = api.nvim_create_namespace("ce-autocmds")
 
   api.nvim_create_autocmd({ "CursorMoved" }, {
     group = gid,
     buffer = source_bufnr,
     callback = function()
+      if fn.bufloaded(asm_bufnr) == 0 then
+        api.nvim_clear_autocmds({ group = gid, event = "CursorMoved" })
+        return
+      end
       api.nvim_buf_clear_namespace(asm_bufnr, ns, 0, -1)
 
       local line_nr = fn.line(".")
@@ -65,6 +69,10 @@ M.create_autocmd = function(source_bufnr, asm_bufnr, resp, offset)
     group = gid,
     buffer = asm_bufnr,
     callback = function()
+      if not fn.bufloaded(source_bufnr) == 0 then
+        api.nvim_clear_autocmds({ group = gid, event = "CursorMoved" })
+        return
+      end
       api.nvim_buf_clear_namespace(source_bufnr, ns, 0, -1)
 
       local line_nr = fn.line(".")
@@ -84,7 +92,7 @@ M.create_autocmd = function(source_bufnr, asm_bufnr, resp, offset)
     group = gid,
     buffer = source_bufnr,
     callback = function()
-      api.nvim_buf_clear_namespace(asm_bufnr, ns, 0, -1)
+      pcall(api.nvim_buf_clear_namespace, asm_bufnr, ns, 0, -1)
     end,
   })
 
@@ -92,7 +100,7 @@ M.create_autocmd = function(source_bufnr, asm_bufnr, resp, offset)
     group = gid,
     buffer = asm_bufnr,
     callback = function()
-      api.nvim_buf_clear_namespace(source_bufnr, ns, 0, -1)
+      pcall(api.nvim_buf_clear_namespace, source_bufnr, ns, 0, -1)
     end,
   })
 
