@@ -1,12 +1,12 @@
 local b64 = require("compiler-explorer.base64")
-local alert = require("compiler-explorer.alert")
 
-local api = vim.api
+local api, fn = vim.api, vim.fn
 local json = vim.json
 
 local M = {}
 
 M.state = {}
+M.buffers = {}
 
 M.create = function()
   local sessions = {}
@@ -51,6 +51,16 @@ M.save_info = function(source_bufnr, asm_bufnr, body)
       return { name = lib.id, ver = lib.version }
     end, body.options.libraries),
   }
+end
+
+M.get_last_bufwinid = function(source_bufnr)
+  for _, asm_buffer in ipairs(vim.tbl_keys(M.state[source_bufnr] or {})) do
+    local winid = fn.bufwinid(asm_buffer)
+    if winid ~= -1 then
+      return winid
+    end
+  end
+  return nil
 end
 
 return M

@@ -1,28 +1,23 @@
+local clientstate = require("compiler-explorer.clientstate")
 local config = require("compiler-explorer.config")
 
 local uv = vim.loop
-local api, fn = vim.api, vim.fn
+local api = vim.api
 
 local M = {}
 
 -- Creates a new buffer and window or uses the previous one.
-function M.create_window_buffer(compiler_id, new_window)
+function M.create_window_buffer(source_bufnr, compiler_id, new_window)
   local conf = config.get_config()
 
-  local windows = fn.winnr("$")
-  if windows == 1 then
-    new_window = true
-  end
-
-  if new_window then
-    if windows == 1 then
-      vim.cmd("vsplit")
-    else
-      vim.cmd("wincmd l")
+  local winid = clientstate.get_last_bufwinid(source_bufnr)
+  if winid == nil then
+    vim.cmd("vsplit")
+  else
+    api.nvim_set_current_win(winid)
+    if new_window then
       vim.cmd(conf.split)
     end
-  else
-    vim.cmd("wincmd l")
   end
 
   local asm_bufnr = api.nvim_create_buf(false, true)

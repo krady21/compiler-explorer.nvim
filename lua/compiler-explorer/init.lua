@@ -102,7 +102,7 @@ M.compile = async.void(function(opts)
     return line.text
   end, response.asm)
 
-  local asm_bufnr = util.create_window_buffer(compiler.id, opts.bang)
+  local asm_bufnr = util.create_window_buffer(source_bufnr, compiler.id, opts.bang)
   api.nvim_buf_clear_namespace(asm_bufnr, -1, 0, -1)
 
   api.nvim_buf_set_option(asm_bufnr, "modifiable", true)

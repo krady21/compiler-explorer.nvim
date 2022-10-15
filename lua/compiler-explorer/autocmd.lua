@@ -46,7 +46,8 @@ M.create_autocmd = function(source_bufnr, asm_bufnr, resp, offset)
     buffer = source_bufnr,
     callback = function()
       if fn.bufloaded(asm_bufnr) == 0 then
-        api.nvim_clear_autocmds({ group = gid, event = "CursorMoved" })
+        api.nvim_clear_autocmds({ group = gid })
+        api.nvim_del_augroup_by_id(gid)
         return
       end
       api.nvim_buf_clear_namespace(asm_bufnr, ns, 0, -1)
@@ -70,7 +71,8 @@ M.create_autocmd = function(source_bufnr, asm_bufnr, resp, offset)
     buffer = asm_bufnr,
     callback = function()
       if not fn.bufloaded(source_bufnr) == 0 then
-        api.nvim_clear_autocmds({ group = gid, event = "CursorMoved" })
+        api.nvim_clear_autocmds({ group = gid })
+        api.nvim_del_augroup_by_id(gid)
         return
       end
       api.nvim_buf_clear_namespace(source_bufnr, ns, 0, -1)
