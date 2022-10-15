@@ -6,7 +6,7 @@ M.defaults = {
   infer_lang = true, -- Try to infer possible language based on file extension.
   binary_hl = "Comment",
   autocmd = {
-    enable = true,
+    enable = false,
     hl = "CursorLine",
   },
   diagnostics = { -- vim.diagnostic.config() options for the ce-diagnostics namespace.

@@ -69,7 +69,7 @@ M.get_compilers = function(extension)
   end, compilers)
 end
 
-M.delete_cache = function()
+M.delete = function()
   cache.in_memory = {}
   os.remove(cache.filename)
   alert.info("Cache file has been deleted.")

@@ -16,24 +16,67 @@ and curl.
 ==============================================================================
 COMMANDS                                          *compiler-explorer-commands*
 
-                                                                  *:CECompile*
-:CECompile {args}
+                                                                  
+:CECompile {args}                                                 *:CECompile*
                         Compile the source code found in the current buffer
                         using <https://godbolt.org/> or a local instance and
-                        dump the assembly output to a new window. If the
-                        compiler argument is not passed, the user is prompted
-                        to select a compiler from a list of available ones and
-                        pass compiler flags.
+                        dump the assembly output to a new window.
 
-                                                                 *:CECompile!*
-:CECompile! {args}      Similar to |:CECompile| but creates a new window insted
-                        of using the last one created.
+                        Options:
+                        • compiler={compiler-id} compiler•id as received from
+                          <https://godbolt.org/api/compilers>, can be tab
+                          completed. If not specified, the user will be
+                          prompted to select it interactively using *vim.ui.select*.
 
-                                                              *:CECompileLive*
-:CECompileLive {args}   Run |:CECompile| after every |BufwritePost| event.
+                        • flags={compiler-flags} Compiler flags
+                          comma•separated.
 
-                                                                   *:CEFormat*
-:CEFormat               Format the source code found in the current buffer
+                        • inferLang={true/false} If true, infer the language
+                          based on file extension, otherwise prompt the user
+                          to select the language interactively. Default: true
+
+                        • labels={true/false} Filter unused labels from the
+                          output. Default: true
+
+                        • directives={true/false} Filter assembler directives
+                          from the output. Default: true
+
+                        • libraryCode={true/false} Filter functions from other
+                          libraries from the output. Default: true
+
+                        • commentOnly={true/false} Remove all lines which are
+                          only comments from the output. Default: true
+
+                        • demangle={true/false} Demangle identifiers. Default:
+                          true
+
+                        • intel={true/false} If true, use intel syntax,
+                          otherwise use AT&T syntax. Default: true
+
+                        • trim={true/false} Trim intra line whitespace.
+                          Default: false
+
+                        • binary={true/false} Compile to binary and
+                          disassemble the output. Address and opcodes are show
+                          as virtual text over and after every output line.
+                          Default: false
+
+                        • execute={true/false} TODO: not implented.
+
+:CECompile! {args}                                               *:CECompile!*
+                        Similar to |:CECompile| but creates a new window
+                        insted of reusing the last one created.
+
+                        Options: Same as |:CECompile|
+
+                                                              
+:CECompileLive {args}                                         *:CECompileLive*
+                        Run |:CECompile| after every |BufwritePost| event.
+
+                        Options: Same as |:CECompile|
+                                                                   
+:CEFormat                                                          *:CEFormat*
+                        Format the source code found in the current buffer
                         with a formatter selected by the user.
 
 :CEAddLibrary                                                  *:CEAddLibrary*
@@ -44,8 +87,9 @@ COMMANDS                                          *compiler-explorer-commands*
 :CELoadExample                                                *:CELoadExample*
                         Load an existing code example to a new tab.
 
-                                                             *:CEOpenWebsite!*
-:CEOpenWebsite          Open the website with the local source code and
+                                                             
+:CEOpenWebsite                                               *:CEOpenWebsite!*
+                        Open the website with the local source code and
                         compiler configurations. Works with multiple source
                         code windows.
                         
@@ -62,19 +106,31 @@ These commands are local to the assembly output buffers.
 ==============================================================================
 CONFIGURATION
 
-The plugin works out of the box without configuration. If you want to change
-some of the options, you can do so through the setup() function. All the
-possible options can be found in the config.lua module in the source repo.
+The plugin works out of the box without any configuration. If you want to
+change some of the options, you can do so through the setup() function. All
+the possible options can be found in the config.lua module in the source repo.
 
 Example:
+
 require("compiler-explorer").setup({
-  url = "http://localhost:10240",
-  open_qflist = true,
-  infer_lang = false,
+  url = "https://godbolt.org",
+  open_qflist = false, -- Open qflist after compile.
+  infer_lang = true, -- Try to infer possible language based on file extension.
+  binary_hl = "Comment", -- Highlight group for binary extmarks/virtual text.
   autocmd = {
-    enable = true,
-    hl = "Search",
-  }
+    enable = false, -- Enable assembly to source and source to assembly highlighting.
+    hl = "Cursorline", -- Highlight group used for line match highlighting.
+  },
+  diagnostics = { -- vim.diagnostic.config() options for the ce-diagnostics namespace.
+    underline = false,
+    virtual_text = false,
+    signs = false,
+  },
+  split = "split", -- How to split the window after the second compile (split/vsplit).
+  spinner_frames = { "⣼", "⣹", "⢻", "⠿", "⡟", "⣏", "⣧", "⣶" }, -- Compiling... spinner settings.
+  spinner_interval = 100,
+  compiler_flags = "", -- Default flags passed to the compiler.
+  job_timeout = 25000, -- Timeout for libuv job in milliseconds. (25s)
 })
 
 

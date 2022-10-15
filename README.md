@@ -1,10 +1,13 @@
 # compiler-explorer.nvim
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Neovim lua plugin used for interacting with
-[compiler-explorer](https://godbolt.org/) and supercharged by `vim.ui`,
+Compile your code and explore assembly from Neovim using the
+[compiler-explorer](https://godbolt.org/) REST API. Supercharged by `vim.ui`,
 `vim.notify` and `vim.diagnostic`.
 
-## Demo 
+[Install](#installation) • [Features](#features) • [Commands](#commands) • [Configuration](#configuration)
+
+## Demo
 ![Preview](https://i.imgur.com/Dy7TnUd.gif)
 
 ## Dependencies
@@ -38,10 +41,12 @@ Plug 'krady21/compiler-explorer.nvim'
 
 ## Features
 - Compile code asynchronously using `vim.loop`.
-- Select compiler interactively(`vim.ui.select`) or pass it as the command parameter.
+- Select compiler interactively using `vim.ui.select` or pass it as a vim
+  command parameter.
 - Compile visual selections.
+- Send compiler warnings and errors to the quickfix list.
 - Highlight matching lines between source code and assembly.
-- Show binary output(opcodes and address) using virtual text.
+- Show binary output (opcodes and address) using virtual text.
 - Format code.
 - Add libraries.
 - Show tooltips about specific instructions.
@@ -50,6 +55,8 @@ Plug 'krady21/compiler-explorer.nvim'
 - Open the website with the local state (source code and compilers).
 
 ## Commands
+`:h compiler-explorer-commands`
+
 - CECompile
 - CECompileLive
 - CEFormat
@@ -66,15 +73,16 @@ Plug 'krady21/compiler-explorer.nvim'
 - `:CECompile compiler=g121 flags=-O2 flags=-Wall` specify the
   compiler and flags as command arguments.
 - `':<,'>CECompile` will compile a visual selection.
-- `:CECompile!` will open the assembly output in a new window. Not using
-  bang(!) will reuse the last assembly window.
+- `:CECompile!` will open the assembly output in a new window. Not adding
+  bang (!) will reuse the last assembly window.
 - `:CECompile inferLang=false` do not infer possible language (based on file
-  extension).
+  extension). Will prompt user to select the language before selecting the
+  compiler.
 - `:CECompile binary=true` show binary opcodes and address using virtual text.
 - `:CECompile intel=false` use AT&T syntax instead of intel.
 - `:CECompileLive` creates an autcommand that runs `:CECompile` every time
   the buffer is saved (`BufWritePost`).
-  
+
 
 ## Configuration
 [compiler-explorer.nvim](https://github.com/krady21/compiler-explorer.nvim)

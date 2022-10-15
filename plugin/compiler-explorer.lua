@@ -60,22 +60,8 @@ end, {
   end,
 })
 
-command("CEFormat", function(_)
-  require("compiler-explorer").format()
-end, {})
-
-command("CEAddLibrary", function(_)
-  require("compiler-explorer").add_library()
-end, {})
-
-command("CELoadExample", function(_)
-  require("compiler-explorer").load_example()
-end, {})
-
-command("CEOpenWebsite", function(_)
-  require("compiler-explorer").open_website()
-end, {})
-
-command("CEDeleteCache", function(_)
-  require("compiler-explorer.cache").delete_cache()
-end, {})
+command("CEFormat", require("compiler-explorer").format, {})
+command("CEAddLibrary", require("compiler-explorer").add_library, {})
+command("CELoadExample", require("compiler-explorer").load_example, {})
+command("CEOpenWebsite", require("compiler-explorer").open_website, {})
+command("CEDeleteCache", require("compiler-explorer.cache").delete, {})
