@@ -11,11 +11,14 @@ Compile your code and explore assembly from Neovim using the
 ![Preview](https://i.imgur.com/Dy7TnUd.gif)
 
 ## Dependencies
+### Required
 - [Neovim](https://neovim.io/) >= 0.7
 - [curl](https://curl.se/)
 
-## Optional dependencies
+### Recommended
 - [dressing.nvim](https://github.com/stevearc/dressing.nvim) or another plugin that overrides `vim.ui`
+
+### Optional
 - [nvim-notify](https://github.com/rcarriga/nvim-notify) or another plugin that overrides `vim.notify`
 
 ## Installation
