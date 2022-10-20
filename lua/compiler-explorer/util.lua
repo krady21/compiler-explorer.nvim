@@ -41,7 +41,7 @@ function M.set_binary_extmarks(lines, bufnr)
       local address = string.format("%x", line.address)
       local opcodes = " " .. table.concat(line.opcodes, " ")
 
-      vim.api.nvim_buf_set_extmark(bufnr, ns, i - 1, 0, {
+      api.nvim_buf_set_extmark(bufnr, ns, i - 1, 0, {
         virt_lines_above = true,
         virt_lines = { { { opcodes, conf.binary_hl } } },
         virt_text = { { address, conf.binary_hl } },

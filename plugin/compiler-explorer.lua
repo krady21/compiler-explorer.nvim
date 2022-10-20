@@ -16,22 +16,7 @@ end, {
   bang = true,
   nargs = "*",
   complete = function(arg_lead, _, _)
-    local list
-    if vim.startswith(arg_lead, "compiler=") then
-      local extension = "." .. vim.fn.expand("%:e")
-      local compilers = require("compiler-explorer.cache").get_compilers(extension)
-      list = vim.tbl_map(function(c)
-        return [[compiler=]] .. c.id
-      end, compilers)
-    else
-      local compile_body = require("compiler-explorer.rest").default_body
-      list = vim.tbl_keys(compile_body.options.filters)
-      vim.list_extend(list, { "compiler", "flags", "inferLang" })
-    end
-
-    return vim.tbl_filter(function(el)
-      return string.sub(el, 1, #arg_lead) == arg_lead
-    end, list)
+    return require("compiler-explorer.complete").complete_fn(arg_lead)
   end,
 })
 
@@ -41,22 +26,7 @@ end, {
   range = "%",
   nargs = "*",
   complete = function(arg_lead, _, _)
-    local list
-    if vim.startswith(arg_lead, "compiler=") then
-      local extension = "." .. vim.fn.expand("%:e")
-      local compilers = require("compiler-explorer.cache").get_compilers(extension)
-      list = vim.tbl_map(function(c)
-        return [[compiler=]] .. c.id
-      end, compilers)
-    else
-      local compile_body = require("compiler-explorer.rest").default_body
-      list = vim.tbl_keys(compile_body.options.filters)
-      vim.list_extend(list, { "compiler", "flags", "inferLang" })
-    end
-
-    return vim.tbl_filter(function(el)
-      return string.sub(el, 1, #arg_lead) == arg_lead
-    end, list)
+    return require("compiler-explorer.complete").complete_fn(arg_lead)
   end,
 })
 

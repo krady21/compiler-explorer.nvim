@@ -4,35 +4,6 @@ local util = require("compiler-explorer.util")
 
 local M = {}
 
-M.default_body = {
-  source = "",
-  compiler = "",
-  allowStoreCodeDebug = true,
-  options = {
-    compilerOptions = {
-      produceCfg = false,
-      produceDevice = false,
-      produceGccDump = {},
-      produceLLVMOptPipeline = false,
-      producePp = false,
-    },
-    filters = {
-      binary = false,
-      commentOnly = true,
-      demangle = true,
-      directives = true,
-      execute = false,
-      intel = true,
-      labels = true,
-      libraryCode = true,
-      trim = false,
-    },
-    libraries = {},
-    tools = {},
-    userArguments = "",
-  },
-}
-
 M.languages_get = function()
   local conf = config.get_config()
   local url = table.concat({ conf.url, "api", "languages" }, "/")
@@ -119,8 +90,39 @@ M.compilers_get = function(lang)
   return body
 end
 
+M.get_default_body = function()
+  return {
+    source = "",
+    compiler = "",
+    allowStoreCodeDebug = true,
+    options = {
+      compilerOptions = {
+        produceCfg = false,
+        produceDevice = false,
+        produceGccDump = {},
+        produceLLVMOptPipeline = false,
+        producePp = false,
+      },
+      filters = {
+        binary = false,
+        commentOnly = true,
+        demangle = true,
+        directives = true,
+        execute = false,
+        intel = true,
+        labels = true,
+        libraryCode = true,
+        trim = false,
+      },
+      libraries = {},
+      tools = {},
+      userArguments = "",
+    },
+  }
+end
+
 local function body_from_args(args)
-  local body = vim.deepcopy(M.default_body)
+  local body = M.get_default_body()
 
   local filters = vim.tbl_keys(body.options.filters)
 

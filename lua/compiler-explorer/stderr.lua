@@ -1,13 +1,14 @@
 local config = require("compiler-explorer.config")
 
 local api = vim.api
+local diagnostic = vim.diagnostic
 
 local M = {}
 
 local severity_map = {
-  [1] = vim.diagnostic.severity.INFO,
-  [2] = vim.diagnostic.severity.WARN,
-  [3] = vim.diagnostic.severity.ERROR,
+  [1] = diagnostic.severity.INFO,
+  [2] = diagnostic.severity.WARN,
+  [3] = diagnostic.severity.ERROR,
 }
 
 local function is_full_err(err)
@@ -19,7 +20,7 @@ local function trim_msg_severity(err)
   return pos1 and string.sub(err, pos2 + 1, -1) or ""
 end
 
-M.parse_errors = function(stderr, bufnr, offset)
+M.add_diagnostics = function(stderr, bufnr, offset)
   if stderr == vim.NIL or stderr == nil then
     return
   end
@@ -40,9 +41,9 @@ M.parse_errors = function(stderr, bufnr, offset)
     end
   end
 
-  vim.diagnostic.reset(ns)
-  vim.diagnostic.set(ns, bufnr, diagnostics, conf.diagnostics)
-  vim.diagnostic.setqflist({
+  diagnostic.reset(ns)
+  diagnostic.set(ns, bufnr, diagnostics, conf.diagnostics)
+  diagnostic.setqflist({
     namespace = ns,
     open = conf.open_qflist,
     title = "Compiler Explorer",
