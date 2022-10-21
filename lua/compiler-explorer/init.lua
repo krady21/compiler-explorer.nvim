@@ -289,6 +289,11 @@ end)
 
 M.goto_label = function()
   local word_under_cursor = fn.expand("<cWORD>")
+  if vim.b.labels == vim.NIL then
+    alert.error("No label found with the name %s", word_under_cursor)
+    return
+  end
+
   local label = vim.b.labels[word_under_cursor]
   if label == nil then
     alert.error("No label found with the name %s", word_under_cursor)
