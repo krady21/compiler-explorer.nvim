@@ -16,7 +16,7 @@ end, {
   bang = true,
   nargs = "*",
   complete = function(arg_lead, _, _)
-    return require("compiler-explorer.complete").complete_fn(arg_lead)
+    return require("compiler-explorer.cache").complete_fn(arg_lead)
   end,
 })
 
@@ -26,7 +26,7 @@ end, {
   range = "%",
   nargs = "*",
   complete = function(arg_lead, _, _)
-    return require("compiler-explorer.complete").complete_fn(arg_lead)
+    return require("compiler-explorer.cache").complete_fn(arg_lead)
   end,
 })
 
