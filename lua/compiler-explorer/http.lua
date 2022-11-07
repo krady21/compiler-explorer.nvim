@@ -1,4 +1,3 @@
-local cache = require("compiler-explorer.cache")
 local job = require("compiler-explorer.job")
 local async = require("compiler-explorer.async")
 
@@ -7,6 +6,7 @@ local json = vim.json
 local M = {}
 
 M.get = async.void(function(url)
+  local cache = require("compiler-explorer.cache")
   local data = cache.get()[url]
   if data ~= nil then
     return 200, data

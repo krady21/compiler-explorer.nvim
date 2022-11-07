@@ -1,6 +1,5 @@
 local config = require("compiler-explorer.config")
 local http = require("compiler-explorer.http")
-local util = require("compiler-explorer.util")
 
 local M = {}
 
@@ -161,6 +160,7 @@ M.compile_post = function(compiler_id, req_body)
   local conf = config.get_config()
   local url = table.concat({ conf.url, "api", "compiler", compiler_id, "compile" }, "/")
 
+  local util = require("compiler-explorer.util")
   util.start_spinner()
   local ok, status, body = pcall(http.post, url, req_body)
   util.stop_spinner()

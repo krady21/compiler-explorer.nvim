@@ -1,4 +1,3 @@
-local clientstate = require("compiler-explorer.clientstate")
 local config = require("compiler-explorer.config")
 
 local uv = vim.loop
@@ -10,6 +9,7 @@ local M = {}
 function M.create_window_buffer(source_bufnr, compiler_id, new_window)
   local conf = config.get_config()
 
+  local clientstate = require("compiler-explorer.clientstate")
   local winid = clientstate.get_last_bufwinid(source_bufnr)
   if winid == nil then
     vim.cmd("vsplit")

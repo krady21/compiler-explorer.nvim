@@ -1,5 +1,3 @@
-local b64 = require("compiler-explorer.base64")
-
 local api, fn = vim.api, vim.fn
 local json = vim.json
 
@@ -36,6 +34,7 @@ M.create = function()
     return nil
   end
 
+  local b64 = require("compiler-explorer.base64")
   return b64.encode(json.encode({ sessions = sessions }))
 end
 

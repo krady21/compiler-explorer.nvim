@@ -64,6 +64,7 @@ M.get_compilers = function(extension)
   local filtered_ids = vim.tbl_map(function(l)
     return l.id
   end, filtered_langs)
+
   return vim.tbl_filter(function(c)
     return vim.tbl_contains(filtered_ids, c.lang)
   end, compilers)

@@ -1,11 +1,7 @@
 local alert = require("compiler-explorer.alert")
 local async = require("compiler-explorer.async")
-local autocmd = require("compiler-explorer.autocmd")
-local clientstate = require("compiler-explorer.clientstate")
 local config = require("compiler-explorer.config")
 local rest = require("compiler-explorer.rest")
-local stderr = require("compiler-explorer.stderr")
-local util = require("compiler-explorer.util")
 
 local api, fn = vim.api, vim.fn
 
@@ -25,9 +21,11 @@ end
 
 M.compile = async.void(function(opts)
   local conf = config.get_config()
-  local args = util.parse_args(opts.fargs)
   local vim_select = get_select()
   local vim_input = get_input()
+
+  local util = require("compiler-explorer.util")
+  local args = util.parse_args(opts.fargs)
 
   -- Get window handle of the source code window.
   local source_winnr = api.nvim_get_current_win()
@@ -92,7 +90,8 @@ M.compile = async.void(function(opts)
 
   -- Compile
   local body = rest.create_compile_body(args)
-  local ok, response = pcall(rest.compile_post, compiler.id, body)
+  local response
+  ok, response = pcall(rest.compile_post, compiler.id, body)
 
   if not ok then
     error(response)
@@ -123,11 +122,15 @@ M.compile = async.void(function(opts)
 
   api.nvim_buf_set_option(asm_bufnr, "modifiable", false)
 
+  local stderr = require("compiler-explorer.stderr")
   stderr.add_diagnostics(response.stderr, source_bufnr, opts.line1 - 1)
+
   if conf.autocmd.enable and not args.binary then
+    local autocmd = require("compiler-explorer.autocmd")
     autocmd.create_autocmd(source_bufnr, asm_bufnr, response.asm, opts.line1 - 1)
   end
 
+  local clientstate = require("compiler-explorer.clientstate")
   clientstate.save_info(source_bufnr, asm_bufnr, body)
 
   api.nvim_buf_set_var(asm_bufnr, "arch", compiler.instructionSet) -- used by show_tooltips
@@ -147,6 +150,8 @@ M.open_website = function()
   end
 
   local conf = config.get_config()
+
+  local clientstate = require("compiler-explorer.clientstate")
   local state = clientstate.create()
   if state == nil then
     alert.warn("No compiler configurations were found. Run :CECompile before this.")
@@ -301,7 +306,7 @@ M.goto_label = function()
   end
 
   vim.cmd("norm m'")
-  fn.setcursorcharpos(label, 0)
+  api.nvim_win_set_cursor(0, { label, 0 })
 end
 
 M.load_example = async.void(function()
