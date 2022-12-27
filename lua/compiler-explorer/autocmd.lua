@@ -16,7 +16,7 @@ end
 local function create_linehl_dict(asm, offset)
   local source_to_asm, asm_to_source = {}, {}
   for asm_idx, line_obj in ipairs(asm) do
-    if line_obj.source ~= vim.NIL and line_obj.source.line ~= vim.NIL then
+    if line_obj.source ~= vim.NIL and line_obj.source.line ~= vim.NIL and line_obj.source.file == vim.NIL then
       local source_idx = line_obj.source.line + offset
       if source_to_asm[source_idx] == nil then
         source_to_asm[source_idx] = {}
@@ -60,7 +60,7 @@ M.create_autocmd = function(source_bufnr, asm_bufnr, resp, offset)
         end
         local winid = fn.bufwinid(asm_bufnr)
         if winid ~= -1 then
-          api.nvim_win_set_cursor(winid, { hl_list[1], 0 })
+          pcall(api.nvim_win_set_cursor, winid, { hl_list[1], 0 })
         end
       end
     end,
@@ -84,7 +84,7 @@ M.create_autocmd = function(source_bufnr, asm_bufnr, resp, offset)
 
         local winid = fn.bufwinid(source_bufnr)
         if winid ~= -1 then
-          api.nvim_win_set_cursor(winid, { hl, 0 })
+          pcall(api.nvim_win_set_cursor, winid, { hl, 0 })
         end
       end
     end,
