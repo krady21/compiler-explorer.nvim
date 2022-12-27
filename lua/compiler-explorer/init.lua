@@ -74,6 +74,10 @@ M.compile = async.void(function(opts)
       })
     end
 
+    if not lang then
+      return
+    end
+
     -- Choose compiler
     local compilers = rest.compilers_get(lang.id)
     compiler = vim_select(compilers, {
@@ -83,8 +87,15 @@ M.compile = async.void(function(opts)
       end,
     })
 
+    if not compiler then
+      return
+    end
+
     -- Choose compiler options
     args.flags = vim_input({ prompt = "Select compiler options> ", default = conf.compiler_flags })
+    if args.flags then
+      return
+    end
     args.compiler = compiler.id
   end
 
@@ -208,6 +219,10 @@ M.add_library = async.void(function()
     })
   end
 
+  if not lang then
+    return
+  end
+
   local libs = rest.libraries_get(lang.id)
   if vim.tbl_isempty(libs) then
     alert.info("No libraries are available for %.", lang.name)
@@ -222,6 +237,10 @@ M.add_library = async.void(function()
     end,
   })
 
+  if not lib then
+    return
+  end
+
   -- Choose version
   local version = vim_select(lib.versions, {
     prompt = "Select library version> ",
@@ -229,6 +248,10 @@ M.add_library = async.void(function()
       return item.version
     end,
   })
+
+  if not version then
+    return
+  end
 
   -- Add lib to buffer variable, overwriting previous library version if already present
   vim.b.libs = vim.tbl_deep_extend("force", vim.b.libs or {}, { [lib.id] = version.version })
@@ -250,6 +273,9 @@ M.format = async.void(function()
       return item.name
     end,
   })
+  if not formatter then
+    return
+  end
 
   local style = formatter.styles[1] or "__DefaultStyle"
   if #formatter.styles > 0 then
@@ -259,6 +285,10 @@ M.format = async.void(function()
         return item
       end,
     })
+
+    if not style then
+      return
+    end
   end
 
   local body = rest.create_format_body(source, style)
@@ -331,6 +361,10 @@ M.load_example = async.void(function()
       return item
     end,
   })
+
+  if not lang_id then
+    return
+  end
 
   local example = vim_select(examples_by_lang[lang_id], {
     prompt = "Select example> ",
