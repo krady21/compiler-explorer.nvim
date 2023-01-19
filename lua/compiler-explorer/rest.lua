@@ -1,12 +1,28 @@
 local config = require("compiler-explorer.config")
 local http = require("compiler-explorer.http")
+local util = require("compiler-explorer.util")
 
 local M = {}
 
 local get = function(url)
   local status, body = http.get(url)
   if status ~= 200 then
-    error(("GET %s returned  %d. %s"):format(url, status, body.error))
+    error(("GET %s returned %d. %s"):format(url, status, body.error), 0)
+  end
+  return body
+end
+
+local post = function(url, req_body, spinner_text)
+  util.start_spinner(spinner_text)
+  local ok, status, body = pcall(http.post, url, req_body)
+  util.stop_spinner()
+
+  if not ok then
+    error(status)
+  end
+
+  if status ~= 200 then
+    error(("POST %s returned %d. %s"):format(url, status, body.error), 0)
   end
   return body
 end
@@ -52,12 +68,7 @@ M.format_post = function(formatter_id, req_body)
   local conf = config.get_config()
   local url = table.concat({ conf.url, "api", "format", formatter_id }, "/")
 
-  local status, body = http.post(url, req_body)
-  if status ~= 200 then
-    error(("HTTP request returned status code %d."):format(status))
-  end
-
-  return body
+  return post(url, req_body, "Formatting")
 end
 
 M.compilers_get = function(lang)
@@ -144,19 +155,7 @@ M.compile_post = function(compiler_id, req_body)
   local conf = config.get_config()
   local url = table.concat({ conf.url, "api", "compiler", compiler_id, "compile" }, "/")
 
-  local util = require("compiler-explorer.util")
-  util.start_spinner()
-  local ok, status, body = pcall(http.post, url, req_body)
-  util.stop_spinner()
-
-  if not ok then
-    error(status)
-  end
-
-  if status ~= 200 then
-    error(("HTTP request returned status code %d."):format(status))
-  end
-  return body
+  return post(url, req_body, "Compiling")
 end
 
 M.list_examples_get = function()

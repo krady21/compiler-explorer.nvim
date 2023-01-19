@@ -77,7 +77,7 @@ function M.parse_args(fargs)
   return args
 end
 
-function M.start_spinner()
+function M.start_spinner(text)
   local conf = config.get_config()
   local frames = conf.spinner_frames
   local interval = conf.spinner_interval
@@ -86,7 +86,7 @@ function M.start_spinner()
   M.timer = uv.new_timer()
   M.timer:start(0, interval, function()
     i = (i == #frames) and 1 or (i + 1)
-    local msg = string.format("Compiling %s", frames[i])
+    local msg = text .. " " .. frames[i]
     vim.schedule(function()
       api.nvim_echo({ { msg, "None" } }, false, {})
     end)
