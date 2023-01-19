@@ -3,52 +3,40 @@ local http = require("compiler-explorer.http")
 
 local M = {}
 
+local get = function(url)
+  local status, body = http.get(url)
+  if status ~= 200 then
+    error(("GET %s returned  %d. %s"):format(url, status, body.error))
+  end
+  return body
+end
+
 M.languages_get = function()
   local conf = config.get_config()
   local url = table.concat({ conf.url, "api", "languages" }, "/")
 
-  local status, body = http.get(url)
-  if status ~= 200 then
-    error(("HTTP request returned status code %d."):format(status))
-  end
-
-  return body
+  return get(url)
 end
 
 M.libraries_get = function(lang)
   local conf = config.get_config()
   local url = table.concat({ conf.url, "api", "libraries", lang }, "/")
 
-  local status, body = http.get(url)
-  if status ~= 200 then
-    error(("HTTP request returned status code %d."):format(status))
-  end
-
-  return body
+  return get(url)
 end
 
 M.tooltip_get = function(arch, instruction)
   local conf = config.get_config()
   local url = table.concat({ conf.url, "api", "asm", arch, instruction }, "/")
 
-  local status, body = http.get(url)
-  if status ~= 200 then
-    error({ code = status, msg = body.error })
-  end
-
-  return body
+  return get(url)
 end
 
 M.formatters_get = function()
   local conf = config.get_config()
   local url = table.concat({ conf.url, "api", "formats" }, "/")
 
-  local status, body = http.get(url)
-  if status ~= 200 then
-    error(("HTTP request returned status code %d."):format(status))
-  end
-
-  return body
+  return get(url)
 end
 
 function M.create_format_body(source, style)
@@ -76,11 +64,7 @@ M.compilers_get = function(lang)
   local conf = config.get_config()
   local url = table.concat({ conf.url, "api", "compilers" }, "/")
 
-  local status, body = http.get(url)
-  if status ~= 200 then
-    error(("HTTP request returned status code %d."):format(status))
-  end
-
+  local body = get(url)
   if lang then
     return vim.tbl_filter(function(el)
       return el.lang == lang
@@ -179,23 +163,14 @@ M.list_examples_get = function()
   local conf = config.get_config()
   local url = table.concat({ conf.url, "source", "builtin", "list" }, "/")
 
-  local status, body = http.get(url)
-  if status ~= 200 then
-    error(("HTTP request returned status code %d."):format(status))
-  end
-  return body
+  return get(url)
 end
 
 M.load_example_get = function(lang, name)
   local conf = config.get_config()
   local url = table.concat({ conf.url, "source", "builtin", "load", lang, name }, "/")
 
-  local status, body = http.get(url)
-  if status ~= 200 then
-    error(("HTTP request returned status code %d."):format(status))
-  end
-
-  return body
+  return get(url)
 end
 
 function M.check_compiler(compiler_id)
