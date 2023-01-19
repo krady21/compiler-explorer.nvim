@@ -155,8 +155,15 @@ end)
 
 -- WARN: Experimental
 M.open_website = function()
-  if fn.has("unix") ~= 1 then
-    alert.warn("CEOpenWebsite is not supported on your platform.")
+  local cmd
+  if fn.executable("xdg-open") == 1 then
+    cmd = "!xdg-open"
+  elseif fn.executable("open") == 1 then
+    cmd = "!open"
+  elseif fn.executable("wslview") == 1 then
+    cmd = "!wslview"
+  else
+    alert.warn("CEOpenWebsite is not supported.")
     return
   end
 
@@ -170,7 +177,7 @@ M.open_website = function()
   end
 
   local url = table.concat({ conf.url, "clientstate", state }, "/")
-  vim.cmd("silent !xdg-open " .. url)
+  vim.cmd(table.concat({ "silent", cmd, url }, " "))
 end
 
 -- WARN: Experimental
