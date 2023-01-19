@@ -93,9 +93,6 @@ M.compile = l.async.void(function(opts)
 
     -- Choose compiler options
     args.flags = vim_input({ prompt = "Select compiler options> ", default = conf.compiler_flags })
-    if not args.flags then
-      return
-    end
     args.compiler = compiler.id
   end
 
