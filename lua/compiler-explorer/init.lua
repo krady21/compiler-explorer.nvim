@@ -311,7 +311,7 @@ end)
 M.show_tooltip = l.async.void(function()
   local ok, response = pcall(l.rest.tooltip_get, vim.b.arch, fn.expand("<cword>"))
   if not ok then
-    l.alert.error(response.msg)
+    l.alert.error(response)
     return
   end
 
