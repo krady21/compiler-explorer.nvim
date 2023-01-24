@@ -1,13 +1,11 @@
-local job = require("compiler-explorer.job")
-local async = require("compiler-explorer.async")
+local ce = require("compiler-explorer.lazy")
 
 local json = vim.json
 
 local M = {}
 
-M.get = async.void(function(url)
-  local cache = require("compiler-explorer.cache")
-  local data = cache.get()[url]
+M.get = ce.async.void(function(url)
+  local data = ce.cache.get()[url]
   if data ~= nil then
     return 200, data
   end
@@ -22,8 +20,8 @@ M.get = async.void(function(url)
     url,
   }
 
-  local ret = job.start("curl", args)
-  async.scheduler()
+  local ret = ce.job.start("curl", args)
+  ce.async.scheduler()
   if ret.exit ~= 0 then
     error(("curl error:\ncommand: %s\nexit_code: %d\nstderr: %s"):format(ret.cmd, ret.exit, ret.stderr))
   end
@@ -43,7 +41,7 @@ M.get = async.void(function(url)
   return status, resp
 end)
 
-M.post = async.void(function(url, body)
+M.post = ce.async.void(function(url, body)
   local args = {
     "-s",
     "-X",
@@ -58,8 +56,8 @@ M.post = async.void(function(url, body)
     [[\n%{http_code}\n]],
     url,
   }
-  local ret = job.start("curl", args)
-  async.scheduler()
+  local ret = ce.job.start("curl", args)
+  ce.async.scheduler()
   if ret.exit ~= 0 then
     error(("curl error:\n command: %s \n exit_code %d\n stderr: %s"):format(ret.cmd, ret.exit, ret.stderr))
   end

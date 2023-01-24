@@ -1,4 +1,4 @@
-local config = require("compiler-explorer.config")
+local ce = require("compiler-explorer.lazy")
 
 local api, fn = vim.api, vim.fn
 local hi = vim.highlight
@@ -36,7 +36,7 @@ M.create_autocmd = function(source_bufnr, asm_bufnr, resp, offset)
     return
   end
 
-  local conf = config.get_config()
+  local conf = ce.config.get_config()
   local hl_group = conf.autocmd.hl
   local gid = api.nvim_create_augroup("CompilerExplorer" .. asm_bufnr, { clear = true })
   local ns = api.nvim_create_namespace("ce-autocmds")

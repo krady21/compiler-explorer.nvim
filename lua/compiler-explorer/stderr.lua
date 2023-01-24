@@ -1,4 +1,4 @@
-local config = require("compiler-explorer.config")
+local ce = require("compiler-explorer.lazy")
 
 local api = vim.api
 local diagnostic = vim.diagnostic
@@ -25,7 +25,7 @@ M.add_diagnostics = function(stderr, bufnr, offset)
     return
   end
 
-  local conf = config.get_config()
+  local conf = ce.config.get_config()
   local ns = api.nvim_create_namespace("ce-diagnostics")
 
   local diagnostics = {}
