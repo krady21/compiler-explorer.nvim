@@ -1,5 +1,4 @@
-local async = require("compiler-explorer.async")
-local config = require("compiler-explorer.config")
+local ce = require("compiler-explorer.lazy")
 
 local uv = vim.loop
 
@@ -27,7 +26,7 @@ local function read_stop_pipes(...)
 end
 
 local spawn = function(cmd, args, cb)
-  local conf = config.get_config()
+  local conf = ce.config.get_config()
   local stdout = uv.new_pipe()
   local stderr = uv.new_pipe()
 
@@ -75,6 +74,6 @@ local spawn = function(cmd, args, cb)
   end)
 end
 
-M.start = async.wrap(spawn, 3)
+M.start = ce.async.wrap(spawn, 3)
 
 return M

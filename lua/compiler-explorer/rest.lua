@@ -1,11 +1,9 @@
-local config = require("compiler-explorer.config")
-local http = require("compiler-explorer.http")
-local util = require("compiler-explorer.util")
+local ce = require("compiler-explorer.lazy")
 
 local M = {}
 
 local get = function(url)
-  local status, body = http.get(url)
+  local status, body = ce.http.get(url)
   if status ~= 200 then
     error(("GET %s returned %d. %s"):format(url, status, body.error), 0)
   end
@@ -13,9 +11,9 @@ local get = function(url)
 end
 
 local post = function(url, req_body, spinner_text)
-  util.start_spinner(spinner_text)
-  local ok, status, body = pcall(http.post, url, req_body)
-  util.stop_spinner()
+  ce.util.start_spinner(spinner_text)
+  local ok, status, body = pcall(ce.http.post, url, req_body)
+  ce.util.stop_spinner()
 
   if not ok then
     error(status)
@@ -28,28 +26,28 @@ local post = function(url, req_body, spinner_text)
 end
 
 M.languages_get = function()
-  local conf = config.get_config()
+  local conf = ce.config.get_config()
   local url = table.concat({ conf.url, "api", "languages" }, "/")
 
   return get(url)
 end
 
 M.libraries_get = function(lang)
-  local conf = config.get_config()
+  local conf = ce.config.get_config()
   local url = table.concat({ conf.url, "api", "libraries", lang }, "/")
 
   return get(url)
 end
 
 M.tooltip_get = function(arch, instruction)
-  local conf = config.get_config()
+  local conf = ce.config.get_config()
   local url = table.concat({ conf.url, "api", "asm", arch, instruction }, "/")
 
   return get(url)
 end
 
 M.formatters_get = function()
-  local conf = config.get_config()
+  local conf = ce.config.get_config()
   local url = table.concat({ conf.url, "api", "formats" }, "/")
 
   return get(url)
@@ -65,14 +63,14 @@ function M.create_format_body(source, style)
 end
 
 M.format_post = function(formatter_id, req_body)
-  local conf = config.get_config()
+  local conf = ce.config.get_config()
   local url = table.concat({ conf.url, "api", "format", formatter_id }, "/")
 
   return post(url, req_body, "Formatting")
 end
 
 M.compilers_get = function(lang)
-  local conf = config.get_config()
+  local conf = ce.config.get_config()
   local url = table.concat({ conf.url, "api", "compilers" }, "/")
 
   local body = get(url)
@@ -152,21 +150,21 @@ function M.create_compile_body(args)
 end
 
 M.compile_post = function(compiler_id, req_body)
-  local conf = config.get_config()
+  local conf = ce.config.get_config()
   local url = table.concat({ conf.url, "api", "compiler", compiler_id, "compile" }, "/")
 
   return post(url, req_body, "Compiling")
 end
 
 M.list_examples_get = function()
-  local conf = config.get_config()
+  local conf = ce.config.get_config()
   local url = table.concat({ conf.url, "source", "builtin", "list" }, "/")
 
   return get(url)
 end
 
 M.load_example_get = function(lang, name)
-  local conf = config.get_config()
+  local conf = ce.config.get_config()
   local url = table.concat({ conf.url, "source", "builtin", "load", lang, name }, "/")
 
   return get(url)

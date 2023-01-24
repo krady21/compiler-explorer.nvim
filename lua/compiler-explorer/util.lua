@@ -1,4 +1,4 @@
-local config = require("compiler-explorer.config")
+local ce = require("compiler-explorer.lazy")
 
 local uv = vim.loop
 local api = vim.api
@@ -7,7 +7,7 @@ local M = {}
 
 -- Creates a new buffer and window or uses the previous one.
 function M.create_window_buffer(source_bufnr, compiler_id, new_window)
-  local conf = config.get_config()
+  local conf = ce.config.get_config()
 
   local clientstate = require("compiler-explorer.clientstate")
   local winid = clientstate.get_last_bufwinid(source_bufnr)
@@ -33,7 +33,7 @@ function M.create_window_buffer(source_bufnr, compiler_id, new_window)
 end
 
 function M.set_binary_extmarks(lines, bufnr)
-  local conf = config.get_config()
+  local conf = ce.config.get_config()
   local ns = api.nvim_create_namespace("ce-binary")
 
   for i, line in ipairs(lines) do
@@ -61,7 +61,7 @@ local function to_bool(s)
 end
 
 function M.parse_args(fargs)
-  local conf = config.get_config()
+  local conf = ce.config.get_config()
   local args = {}
   args.inferLang = conf.infer_lang
 
@@ -78,7 +78,7 @@ function M.parse_args(fargs)
 end
 
 function M.start_spinner(text)
-  local conf = config.get_config()
+  local conf = ce.config.get_config()
   local frames = conf.spinner_frames
   local interval = conf.spinner_interval
 

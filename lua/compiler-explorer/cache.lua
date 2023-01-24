@@ -1,5 +1,4 @@
-local alert = require("compiler-explorer.alert")
-local config = require("compiler-explorer.config")
+local ce = require("compiler-explorer.lazy")
 
 local api, fn = vim.api, vim.fn
 local json = vim.json
@@ -48,7 +47,7 @@ setmetatable(cache, {
 })
 
 M.get_compilers = function(extension)
-  local conf = config.get_config()
+  local conf = ce.config.get_config()
   local compilers_endpoint = table.concat({ conf.url, "api", "compilers" }, "/")
   local languages_endpoint = table.concat({ conf.url, "api", "languages" }, "/")
 
@@ -73,7 +72,7 @@ end
 M.delete = function()
   cache.in_memory = {}
   os.remove(cache.filename)
-  alert.info("Cache file has been deleted.")
+  ce.alert.info("Cache file has been deleted.")
 end
 
 M.get = function()
