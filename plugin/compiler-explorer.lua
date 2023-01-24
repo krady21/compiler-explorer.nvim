@@ -30,8 +30,22 @@ end, {
   end,
 })
 
-command("CEFormat", require("compiler-explorer").format, {})
-command("CEAddLibrary", require("compiler-explorer").add_library, {})
-command("CELoadExample", require("compiler-explorer").load_example, {})
-command("CEOpenWebsite", require("compiler-explorer").open_website, {})
-command("CEDeleteCache", require("compiler-explorer.cache").delete, {})
+command("CEFormat", function()
+  require("compiler-explorer").format()
+end, {})
+
+command("CEAddLibrary", function()
+  require("compiler-explorer").add_library()
+end, {})
+
+command("CELoadExample", function()
+  require("compiler-explorer").load_example()
+end, {})
+
+command("CEOpenWebsite", function()
+  require("compiler-explorer").open_website()
+end, {})
+
+command("CEDeleteCache", function()
+  require("compiler-explorer.cache").delete()
+end, {})
