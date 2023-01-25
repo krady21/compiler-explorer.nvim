@@ -9,6 +9,8 @@ Compile your code and explore assembly from Neovim using the
 
 ## Demo
 ![Preview](https://i.imgur.com/Dy7TnUd.gif)
+This is what it looks like using the `vim.ui.select/input` provided by
+dressing.nvim (fzf-lua) and the `vim.notify` provided by nvim-notify.
 
 ## Dependencies
 ### Required
@@ -97,11 +99,10 @@ through the `setup()` function. You can find all the options
 ```lua
 require("compiler-explorer").setup({
   url = "https://godbolt.org",
-  open_qflist = false, -- Open qflist after compile.
   infer_lang = true, -- Try to infer possible language based on file extension.
   binary_hl = "Comment", -- Highlight group for binary extmarks/virtual text.
   autocmd = {
-    enable = false, -- Enable assembly to source and source to assembly highlighting.
+    enable = false, -- Enable highlighting matching lines between source and assembly windows.
     hl = "Cursorline", -- Highlight group used for line match highlighting.
   },
   diagnostics = { -- vim.diagnostic.config() options for the ce-diagnostics namespace.
@@ -129,6 +130,8 @@ require("compiler-explorer").setup({
 - [x] `GET  /source/builtin/list`
 - [x] `GET  /source/builtin/load/<lang-id>/<example-id>`
 - [x] `GET  /clientstate/<base64>`
+
+You can find the full API docs [here](https://github.com/compiler-explorer/compiler-explorer/blob/main/docs/API.md).
 
 ## Related projects
 - [godbolt.nvim](https://github.com/p00f/godbolt.nvim)
