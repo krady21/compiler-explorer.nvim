@@ -36,7 +36,7 @@ M.get = ce.async.void(function(url)
   end
   local resp, status = json.decode(split[1]), tonumber(split[2])
   if status == 200 then
-    cache.get()[url] = resp
+    ce.cache.get()[url] = resp
   end
   return status, resp
 end)

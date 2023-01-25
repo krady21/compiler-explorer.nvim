@@ -34,7 +34,7 @@ local spawn = function(cmd, args, cb)
   local full_cmd = table.concat({ "curl", unpack(args) }, " ")
 
   local handle, timer
-  handle, _ = uv.spawn(cmd, {
+  handle = uv.spawn(cmd, {
     args = args,
     stdio = { nil, stdout, stderr },
   }, function(code, signal)
