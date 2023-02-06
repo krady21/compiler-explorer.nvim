@@ -16,31 +16,34 @@ setmetatable(cache, {
     local value = rawget(t.in_memory, key)
     if value ~= nil then
       return value
-    else
-      if t.loaded_from_file then
-        return nil
-      end
-
-      api.nvim_create_autocmd({ "VimLeavePre" }, {
-        group = api.nvim_create_augroup("ce-cache", { clear = true }),
-        callback = function()
-          local file = io.open(cache.filename, "w+")
-          file:write(json.encode(t.in_memory))
-          file:close()
-        end,
-      })
-
-      local ok, file = pcall(io.open, cache.filename, "r")
-      if not ok or not file then
-        return nil
-      end
-      local data = file:read("*a")
-      file:close()
-      t.in_memory = json.decode(data)
-      t.loaded_from_file = true
-      return rawget(t.in_memory, key)
     end
+
+    if t.loaded_from_file then
+      return nil
+    end
+
+    api.nvim_create_autocmd({ "VimLeavePre" }, {
+      group = api.nvim_create_augroup("ce-cache", { clear = true }),
+      callback = function()
+        local file = io.open(cache.filename, "w+")
+        file:write(json.encode(t.in_memory))
+        file:close()
+      end,
+    })
+
+    local ok, file = pcall(io.open, cache.filename, "r")
+    if not ok or not file then
+      return nil
+    end
+
+    local data = file:read("*a")
+    file:close()
+
+    t.in_memory = json.decode(data)
+    t.loaded_from_file = true
+    return rawget(t.in_memory, key)
   end,
+
   __newindex = function(t, key, value)
     rawset(t.in_memory, key, value)
   end,
@@ -82,7 +85,7 @@ end
 M.complete_fn = function(arg_lead)
   local list
   if vim.startswith(arg_lead, "compiler=") then
-    local extension = "." .. vim.fn.expand("%:e")
+    local extension = "." .. fn.expand("%:e")
     local compilers = M.get_compilers(extension)
     list = vim.tbl_map(function(c)
       return [[compiler=]] .. c.id
