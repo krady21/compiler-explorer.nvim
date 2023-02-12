@@ -18,6 +18,12 @@ M.defaults = {
   spinner_interval = 100,
   compiler_flags = "",
   job_timeout = 25000, -- Timeout for libuv job in milliseconds.
+  languages = { -- Language specific default compiler/flags
+    --c = {
+    --  compiler = "g121",
+    --  compiler_flags = "-O2 -Wall",
+    --},
+  },
 }
 
 M._config = M.defaults
