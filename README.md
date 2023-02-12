@@ -115,6 +115,12 @@ require("compiler-explorer").setup({
   spinner_interval = 100,
   compiler_flags = "", -- Default flags passed to the compiler.
   job_timeout = 25000, -- Timeout for libuv job in milliseconds.
+  languages = { -- Language specific default compiler/flags
+    --c = {
+    --  compiler = "g121",
+    --  compiler_flags = "-O2 -Wall",
+    --},
+  },
 })
 ```
 

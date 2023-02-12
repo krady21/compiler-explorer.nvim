@@ -74,17 +74,31 @@ M.compile = ce.async.void(function(opts)
       return
     end
 
-    -- Choose compiler
-    local compilers = ce.rest.compilers_get(lang.id)
-    compiler = vim_select(compilers, {
-      prompt = "Select compiler> ",
-      format_item = function(item)
-        return item.name
-      end,
-    })
+    -- Extend config with config specific to the language
+    local lang_conf = conf.languages[lang.id]
+    if lang_conf then
+      conf = vim.tbl_deep_extend("force", conf, lang_conf)
+    end
 
-    if not compiler then
-      return
+    if conf.compiler then
+      ok, compiler = pcall(ce.rest.check_compiler, conf.compiler)
+      if not ok then
+        ce.alert.error("Could not compile code with compiler id %s", conf.compiler)
+        return
+      end
+    else
+      -- Choose compiler
+      local compilers = ce.rest.compilers_get(lang.id)
+      compiler = vim_select(compilers, {
+        prompt = "Select compiler> ",
+        format_item = function(item)
+          return item.name
+        end,
+      })
+
+      if not compiler then
+        return
+      end
     end
 
     -- Choose compiler options
