@@ -74,6 +74,14 @@ local spawn = function(cmd, args, cb)
   end)
 end
 
-M.start = ce.async.wrap(spawn, 3)
+local start = ce.async.wrap(spawn, 3)
+
+setmetatable(M, {
+  __index = function(_, key)
+    return ce.async.void(function(args)
+      return start(key, args)
+    end)
+  end,
+})
 
 return M
