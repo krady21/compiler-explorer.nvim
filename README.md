@@ -17,6 +17,8 @@ dressing.nvim (fzf-lua) and the `vim.notify` provided by nvim-notify.
 - [Neovim](https://neovim.io/) >= 0.7
 - [curl](https://curl.se/)
 
+You can verify these dependencies by running `:checkhealth compiler-explorer`
+
 ### Recommended
 - [dressing.nvim](https://github.com/stevearc/dressing.nvim) or another plugin that overrides `vim.ui`
 
