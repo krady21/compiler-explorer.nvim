@@ -112,6 +112,7 @@ require("compiler-explorer").setup({
     virtual_text = false,
     signs = false,
   },
+  open_qflist = false, --  Open qflist after compilation if there are diagnostics.
   split = "split", -- How to split the window after the second compile (split/vsplit).
   spinner_frames = { "⣼", "⣹", "⢻", "⠿", "⡟", "⣏", "⣧", "⣶" }, -- Compiling... spinner settings.
   spinner_interval = 100,

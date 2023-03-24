@@ -41,17 +41,11 @@ M.add_diagnostics = function(stderr, bufnr, offset)
     end
   end
 
-  local open_qflist = true
-  if #diagnostics == 0 then
-    open_qflist = false
-    vim.cmd("cclose")
-  end
-
   diagnostic.reset(ns)
   diagnostic.set(ns, bufnr, diagnostics, conf.diagnostics)
   diagnostic.setqflist({
     namespace = ns,
-    open = open_qflist,
+    open = conf.open_qflist and (#diagnostics > 0),
     title = "Compiler Explorer",
   })
 end
