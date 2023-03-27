@@ -27,7 +27,7 @@ M.compile = ce.async.void(function(opts)
   local source_winnr = api.nvim_get_current_win()
 
   -- Get buffer number of the source code buffer.
-  local source_bufnr = fn.bufnr("%")
+  local source_bufnr = api.nvim_get_current_buf()
 
   -- Get contents of the selected lines.
   local buf_contents = api.nvim_buf_get_lines(source_bufnr, opts.line1 - 1, opts.line2, false)
@@ -189,7 +189,7 @@ M.compile_live = ce.async.void(function(opts)
 
   api.nvim_create_autocmd({ "BufWritePost" }, {
     group = api.nvim_create_augroup("CompilerExplorerLive", { clear = true }),
-    buffer = fn.bufnr("%"),
+    buffer = api.nvim_get_current_buf(),
     callback = function()
       M.compile({
         line1 = 1,
