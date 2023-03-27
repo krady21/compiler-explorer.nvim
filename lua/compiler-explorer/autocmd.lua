@@ -1,19 +1,10 @@
 local ce = require("compiler-explorer.lazy")
 
 local api, fn = vim.api, vim.fn
-local hi = vim.highlight
 
 local M = {}
 
-local function highlight_line(bufnr, linenr, ns, higroup)
-  if fn.has("nvim-0.8") then
-    hi.range(bufnr, ns, higroup, { linenr, 0 }, { linenr, 3000 }, { inclusive = true, regtype = "linewise" })
-  else
-    hi.range(bufnr, ns, higroup, { linenr, 0 }, { linenr, -1 }, "linewise", true)
-  end
-end
-
-local function create_linehl_dict(asm, offset)
+local function create_matching_lines_dicts(asm, offset)
   local source_to_asm, asm_to_source = {}, {}
   for asm_idx, line_obj in ipairs(asm) do
     if line_obj.source ~= vim.NIL and line_obj.source.line ~= vim.NIL and line_obj.source.file == vim.NIL then
@@ -31,7 +22,7 @@ local function create_linehl_dict(asm, offset)
 end
 
 M.create_autocmd = function(source_bufnr, asm_bufnr, resp, offset)
-  local source_to_asm, asm_to_source = create_linehl_dict(resp, offset)
+  local source_to_asm, asm_to_source = create_matching_lines_dicts(resp, offset)
   if vim.tbl_isempty(source_to_asm) or vim.tbl_isempty(asm_to_source) then
     return
   end
@@ -60,9 +51,9 @@ M.create_autocmd = function(source_bufnr, asm_bufnr, resp, offset)
       hl_list = { hl_list }
     end
 
-    for _, hl in ipairs(hl_list) do
-      -- highlight the matching line(s)
-      pcall(highlight_line, other_buf, hl - 1, ns, hl_group)
+    for _, linenr in ipairs(hl_list) do
+      -- highlight the matching line
+      pcall(api.nvim_buf_add_highlight, other_buf, ns, hl_group, linenr - 1, 0, -1)
     end
 
     local winid = fn.bufwinid(other_buf)
