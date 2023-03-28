@@ -39,6 +39,7 @@ M.compile = ce.async.void(function(opts)
     return
   end
 
+  local lang
   if not compiler then
     local lang_list = ce.rest.languages_get()
     local possible_langs = lang_list
@@ -57,7 +58,6 @@ M.compile = ce.async.void(function(opts)
       end
     end
 
-    local lang
     if #possible_langs == 1 then
       lang = possible_langs[1]
     else
@@ -105,6 +105,8 @@ M.compile = ce.async.void(function(opts)
     args.flags = vim_input({ prompt = "Select compiler options> ", default = conf.compiler_flags })
     args.compiler = compiler.id
   end
+
+  args.lang = compiler.lang
 
   -- Compile
   local body = ce.rest.create_compile_body(args)
