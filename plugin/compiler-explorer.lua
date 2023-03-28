@@ -10,7 +10,7 @@ end
 vim.g.loaded_compiler_explorer = 1
 
 command("CECompile", function(opts)
-  require("compiler-explorer").compile(opts)
+  require("compiler-explorer").compile(opts, false)
 end, {
   range = "%",
   bang = true,
@@ -21,7 +21,7 @@ end, {
 })
 
 command("CECompileLive", function(opts)
-  require("compiler-explorer").compile_live(opts)
+  require("compiler-explorer").compile(opts, true)
 end, {
   range = "%",
   nargs = "*",

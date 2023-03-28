@@ -16,7 +16,7 @@ M.setup = function(user_config)
   ce.config.setup(user_config or {})
 end
 
-M.compile = ce.async.void(function(opts)
+M.compile = ce.async.void(function(opts, live)
   local conf = ce.config.get_config()
   local vim_select = get_select()
   local vim_input = get_input()
@@ -103,10 +103,26 @@ M.compile = ce.async.void(function(opts)
 
     -- Choose compiler options
     args.flags = vim_input({ prompt = "Select compiler options> ", default = conf.compiler_flags })
-    args.compiler = compiler.id
+    args.compiler = compiler
   end
 
+  ce.async.scheduler()
+
   args.lang = compiler.lang
+
+  if live then
+    api.nvim_create_autocmd({ "BufWritePost" }, {
+      group = api.nvim_create_augroup("CompilerExplorerLive", { clear = true }),
+      buffer = source_bufnr,
+      callback = function()
+        M.compile({
+          line1 = 1,
+          line2 = fn.line("$"),
+          fargs = { "compiler=" .. args.compiler.id, "flags=" .. (args.flags or "") },
+        }, false)
+      end,
+    })
+  end
 
   -- Compile
   local body = ce.rest.create_compile_body(args)
@@ -114,7 +130,7 @@ M.compile = ce.async.void(function(opts)
   ok, response = pcall(ce.rest.compile_post, compiler.id, body)
 
   if not ok then
-    error(response)
+    ce.alert.error(response)
   end
 
   local asm_lines = vim.tbl_map(function(line)
@@ -155,8 +171,6 @@ M.compile = ce.async.void(function(opts)
 
   api.nvim_buf_create_user_command(asm_bufnr, "CEShowTooltip", M.show_tooltip, {})
   api.nvim_buf_create_user_command(asm_bufnr, "CEGotoLabel", M.goto_label, {})
-
-  return args.compiler, args.flags
 end)
 
 -- WARN: Experimental
@@ -184,23 +198,6 @@ M.open_website = function()
   local url = table.concat({ conf.url, "clientstate", state }, "/")
   vim.cmd(table.concat({ "silent", cmd, url }, " "))
 end
-
--- WARN: Experimental
-M.compile_live = ce.async.void(function(opts)
-  local compiler, flags = M.compile(opts)
-
-  api.nvim_create_autocmd({ "BufWritePost" }, {
-    group = api.nvim_create_augroup("CompilerExplorerLive", { clear = true }),
-    buffer = api.nvim_get_current_buf(),
-    callback = function()
-      M.compile({
-        line1 = 1,
-        line2 = fn.line("$"),
-        fargs = { "compiler=" .. compiler, flags and "flags=" .. flags },
-      })
-    end,
-  })
-end)
 
 M.add_library = ce.async.void(function()
   local vim_select = get_select()
