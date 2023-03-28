@@ -13,17 +13,18 @@ M.create = function()
   local id = 1
   for source_bufnr, asm_data in pairs(M.state) do
     if api.nvim_buf_is_loaded(source_bufnr) then
-      local lines = api.nvim_buf_get_lines(source_bufnr, 0, -1, false)
-      local source = table.concat(lines, "\n")
       local compilers = {}
       for asm_bufnr, data in pairs(asm_data) do
         if api.nvim_buf_is_loaded(asm_bufnr) then
           table.insert(compilers, data)
-          -- else
-          --   M.state[asm_bufnr][source_bufnr] = nil
         end
       end
+
+      local lines = api.nvim_buf_get_lines(source_bufnr, 0, -1, false)
+      local source = table.concat(lines, "\n")
+
       table.insert(sessions, {
+        language = compilers[1].lang,
         id = id,
         source = source,
         compilers = compilers,
@@ -40,10 +41,10 @@ M.create = function()
 end
 
 M.save_info = function(source_bufnr, asm_bufnr, body)
-  if M.state[source_bufnr] == nil then
-    M.state[source_bufnr] = {}
-  end
+  M.state[source_bufnr] = M.state[source_bufnr] or {}
+
   M.state[source_bufnr][asm_bufnr] = {
+    lang = body.lang,
     id = body.compiler,
     options = body.options.userArguments,
     filters = body.options.filters,

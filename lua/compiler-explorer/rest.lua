@@ -86,6 +86,7 @@ M.get_default_body = function()
   return {
     source = "",
     compiler = "",
+    lang = "",
     allowStoreCodeDebug = true,
     options = {
       compilerOptions = {
@@ -123,7 +124,7 @@ local function body_from_args(args)
       body.options.filters[key] = value
     end
 
-    if key == "compiler" or key == "source" then
+    if key == "compiler" or key == "source" or key == "lang" then
       body[key] = value
     end
 
