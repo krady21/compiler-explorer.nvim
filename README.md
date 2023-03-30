@@ -5,7 +5,9 @@ Compile your code and explore assembly from Neovim using the
 [compiler-explorer](https://godbolt.org/) REST API. Supercharged by `vim.ui`,
 `vim.notify` and `vim.diagnostic`.
 
-[Install](#installation) • [Features](#features) • [Commands](#commands) • [Configuration](#configuration)
+
+| [Install](#installation) | [Features](#features) | [Commands](#commands) | [Configuration](#configuration) |
+| --- | --- | --- | --- |
 
 ## Demo
 ![Preview](https://i.imgur.com/Dy7TnUd.gif)
