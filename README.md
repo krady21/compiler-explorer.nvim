@@ -9,7 +9,7 @@ Compile your code and explore assembly from Neovim using the
 
 ## Demo
 ![Preview](https://i.imgur.com/Dy7TnUd.gif)
-This is what it looks like using the `vim.ui.select/input` provided by
+This is how the interface looks using the `vim.ui.select/input` provided by
 dressing.nvim (fzf-lua) and the `vim.notify` provided by nvim-notify.
 
 ## Dependencies
@@ -62,17 +62,22 @@ Plug 'krady21/compiler-explorer.nvim'
 - Open the website with the local state (source code and compilers).
 
 ## Commands
-`:h compiler-explorer-commands`
+The suggested way to use
+[compiler-explorer.nvim](https://github.com/krady21/compiler-explorer.nvim) is
+through the vim commands it provides. You can refer to `:h
+compiler-explorer-commands` or the table below:
 
-- CECompile
-- CECompileLive
-- CEFormat
-- CEAddLibrary
-- CELoadExample
-- CEOpenWebsite
-- CEDeleteCache
-- CEShowTooltip (local to assembly buffer)
-- CEGotoLabel (local to assembly buffer)
+| Command | Description | Called from |
+| --- | --- | --- |
+| `:CECompile` | Compile the source code in the current buffer and dump assembly output to a new window. Also accepts a visual selection. | source code buffer |
+| `:CECompileLive` | Same as `:CECompile`, but it will also try to recompile the source code every time the buffer is saved. | source code buffer |
+| `:CEFormat` | Format the source code. | source code buffer |
+| `:CEAddLibrary` | Add a library to be used by future calls of `:CECompile`. | source code buffer |
+| `:CELoadExample` | Load an existing code example to a new tab. | any buffer |
+| `:CEOpenWebsite` | Open the website using the source code and compilers from previous `:CECompile` calls. | any buffer |
+| `:CEDeleteCache` | Clear the json cache where the compilers and languages are stored. | any buffer |
+| `:CEShowTooltip` | Show information about a specific instruction under cursor. | assembly buffer |
+| `:CEGotoLabel` | Jump to the label definition under cursor. | assembly buffer |
 
 ### Examples
 - `:CECompile` will prompt the user to select the compiler and flags
