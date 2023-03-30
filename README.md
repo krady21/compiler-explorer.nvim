@@ -5,46 +5,14 @@ Compile your code and explore assembly from Neovim using the
 [compiler-explorer](https://godbolt.org/) REST API. Supercharged by `vim.ui`,
 `vim.notify` and `vim.diagnostic`.
 
-[Install](#installation) • [Features](#features) • [Commands](#commands) • [Configuration](#configuration)
+[Features](#features) • [Dependencies](#dependencies) • [Install](#installation) • [Commands](#commands) • [Configuration](#configuration)
 
 ## Demo
 ![Preview](https://i.imgur.com/Dy7TnUd.gif)
-This is what it looks like using the `vim.ui.select/input` provided by
-dressing.nvim (fzf-lua) and the `vim.notify` provided by nvim-notify.
-
-## Dependencies
-### Required
-- [Neovim](https://neovim.io/) >= 0.7
-- [curl](https://curl.se/)
-
-You can verify these dependencies by running `:checkhealth compiler-explorer`
-
-### Recommended
-- [dressing.nvim](https://github.com/stevearc/dressing.nvim) or another plugin that overrides `vim.ui`
-
-### Optional
-- [nvim-notify](https://github.com/rcarriga/nvim-notify) or another plugin that overrides `vim.notify`
-
-## Installation
-
-- [packer](https://github.com/wbthomason/packer.nvim)
-```lua
-require('packer').startup(function()
-  use {'krady21/compiler-explorer.nvim'}
-end
-```
-
-- [paq](https://github.com/savq/paq-nvim)
-```lua
-require("paq") {
-  {'krady21/compiler-explorer.nvim'};
-}
-```
-
-- [vim-plug](https://github.com/junegunn/vim-plug)
-```vim
-Plug 'krady21/compiler-explorer.nvim'
-```
+This is what the interface looks like using the `vim.ui.select/input` provided
+by [dressing.nvim](https://github.com/stevearc/dressing.nvim) with the
+[fzf-lua](https://github.com/ibhagwan/fzf-lua) backend and the `vim.notify`
+provided by [nvim-notify](https://github.com/rcarriga/nvim-notify).
 
 ## Features
 - Compile code asynchronously using `vim.loop`.
@@ -61,18 +29,62 @@ Plug 'krady21/compiler-explorer.nvim'
 - Load example code.
 - Open the website with the local state (source code and compilers).
 
-## Commands
-`:h compiler-explorer-commands`
+## Dependencies
+You can verify these dependencies by running `:checkhealth compiler-explorer`
 
-- CECompile
-- CECompileLive
-- CEFormat
-- CEAddLibrary
-- CELoadExample
-- CEOpenWebsite
-- CEDeleteCache
-- CEShowTooltip (local to assembly buffer)
-- CEGotoLabel (local to assembly buffer)
+- [Neovim](https://neovim.io/) >= 0.7
+- [curl](https://curl.se/)
+
+<details>
+<summary>Recommended</summary>
+<br>
+<a href="https://github.com/stevearc/dressing.nvim">dressing.nvim</a> or another plugin that overrides <code>vim.ui</code>
+</details>
+
+<details>
+<summary>Optional</summary>
+<br>
+<a href="https://github.com/rcarriga/nvim-notify">notify.nvim</a> or another plugin that overrides <code>vim.notify</code>
+</details>
+
+## Installation
+
+[packer](https://github.com/wbthomason/packer.nvim)
+```lua
+require('packer').startup(function()
+  use {'krady21/compiler-explorer.nvim'}
+end
+```
+
+[paq](https://github.com/savq/paq-nvim)
+```lua
+require("paq") {
+  {'krady21/compiler-explorer.nvim'};
+}
+```
+
+[vim-plug](https://github.com/junegunn/vim-plug)
+```vim
+Plug 'krady21/compiler-explorer.nvim'
+```
+
+## Commands
+The suggested way to use
+[compiler-explorer.nvim](https://github.com/krady21/compiler-explorer.nvim) is
+through the vim commands it provides. You can refer to `:h
+compiler-explorer-commands` or the table below:
+
+| Command | Description | Called from |
+| --- | --- | --- |
+| `:CECompile` | Compile the source code in the current buffer and dump assembly output to a new window. Also accepts a visual selection. | source code buffer |
+| `:CECompileLive` | Same as `:CECompile`, but it will also try to recompile the source code every time the buffer is saved. | source code buffer |
+| `:CEFormat` | Format the source code. | source code buffer |
+| `:CEAddLibrary` | Add a library to be used by future calls of `:CECompile`. | source code buffer |
+| `:CELoadExample` | Load an existing code example to a new tab. | any buffer |
+| `:CEOpenWebsite` | Open the website using the source code and compilers from previous `:CECompile` calls. | any buffer |
+| `:CEDeleteCache` | Clear the json cache where the compilers and languages are stored. | any buffer |
+| `:CEShowTooltip` | Show information about a specific instruction under cursor. | assembly buffer |
+| `:CEGotoLabel` | Jump to the label definition under cursor. | assembly buffer |
 
 ### Examples
 - `:CECompile` will prompt the user to select the compiler and flags
