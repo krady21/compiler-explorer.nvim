@@ -20,7 +20,11 @@ M.get = ce.async.void(function(url)
     url,
   }
 
-  local ret = ce.job.curl(args)
+  local ok, ret = pcall(ce.job.curl, args)
+  if not ok then
+    error("curl executable not found")
+  end
+
   ce.async.scheduler()
   if ret.exit ~= 0 then
     error(("curl error:\ncommand: %s\nexit_code: %d\nstderr: %s"):format(ret.cmd, ret.exit, ret.stderr))
@@ -56,7 +60,11 @@ M.post = ce.async.void(function(url, body)
     [[\n%{http_code}\n]],
     url,
   }
-  local ret = ce.job.curl(args)
+  local ok, ret = pcall(ce.job.curl, args)
+  if not ok then
+    error("curl executable not found")
+  end
+
   ce.async.scheduler()
   if ret.exit ~= 0 then
     error(("curl error:\n command: %s \n exit_code %d\n stderr: %s"):format(ret.cmd, ret.exit, ret.stderr))

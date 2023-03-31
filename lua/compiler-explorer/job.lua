@@ -58,7 +58,7 @@ local spawn = function(cmd, args, cb)
 
   if not handle then
     close_pipes(stdout, stderr)
-    error(("Failed to start the process: %s"):format(table.concat({ cmd, unpack(args) }, " ")))
+    error(("Failed to start the process: %s"):format(full_cmd))
   end
 
   timer = uv.new_timer()
