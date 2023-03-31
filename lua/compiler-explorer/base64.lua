@@ -148,10 +148,20 @@ function base64.encode(str, encoder, usecaching)
   if lastn == 2 then
     local a, b = str:byte(n - 1, n)
     local v = a * 0x10000 + b * 0x100
-    t[k] = char(encoder[extract(v, 18, 6)], encoder[extract(v, 12, 6)], encoder[extract(v, 6, 6)], encoder[64])
+    t[k] = char(
+      encoder[extract(v, 18, 6)],
+      encoder[extract(v, 12, 6)],
+      encoder[extract(v, 6, 6)],
+      encoder[64]
+    )
   elseif lastn == 1 then
     local v = str:byte(n) * 0x10000
-    t[k] = char(encoder[extract(v, 18, 6)], encoder[extract(v, 12, 6)], encoder[64], encoder[64])
+    t[k] = char(
+      encoder[extract(v, 18, 6)],
+      encoder[extract(v, 12, 6)],
+      encoder[64],
+      encoder[64]
+    )
   end
   return concat(t)
 end
@@ -182,12 +192,18 @@ function base64.decode(b64, decoder, usecaching)
       local v0 = a * 0x1000000 + b * 0x10000 + c * 0x100 + d
       s = cache[v0]
       if not s then
-        local v = decoder[a] * 0x40000 + decoder[b] * 0x1000 + decoder[c] * 0x40 + decoder[d]
+        local v = decoder[a] * 0x40000
+          + decoder[b] * 0x1000
+          + decoder[c] * 0x40
+          + decoder[d]
         s = char(extract(v, 16, 8), extract(v, 8, 8), extract(v, 0, 8))
         cache[v0] = s
       end
     else
-      local v = decoder[a] * 0x40000 + decoder[b] * 0x1000 + decoder[c] * 0x40 + decoder[d]
+      local v = decoder[a] * 0x40000
+        + decoder[b] * 0x1000
+        + decoder[c] * 0x40
+        + decoder[d]
       s = char(extract(v, 16, 8), extract(v, 8, 8), extract(v, 0, 8))
     end
     t[k] = s

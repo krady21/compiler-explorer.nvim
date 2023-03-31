@@ -1,5 +1,3 @@
 return setmetatable({}, {
-  __index = function(_, key)
-    return require("compiler-explorer." .. key)
-  end,
+  __index = function(_, key) return require("compiler-explorer." .. key) end,
 })

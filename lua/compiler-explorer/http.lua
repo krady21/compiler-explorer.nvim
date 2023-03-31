@@ -6,9 +6,7 @@ local M = {}
 
 M.get = ce.async.void(function(url)
   local data = ce.cache.get()[url]
-  if data ~= nil then
-    return 200, data
-  end
+  if data ~= nil then return 200, data end
 
   local args = {
     "-X",
@@ -21,27 +19,27 @@ M.get = ce.async.void(function(url)
   }
 
   local ok, ret = pcall(ce.job.curl, args)
-  if not ok then
-    error("curl executable not found")
-  end
+  if not ok then error("curl executable not found") end
 
   ce.async.scheduler()
   if ret.exit ~= 0 then
-    error(("curl error:\ncommand: %s\nexit_code: %d\nstderr: %s"):format(ret.cmd, ret.exit, ret.stderr))
+    error(
+      ("curl error:\ncommand: %s\nexit_code: %d\nstderr: %s"):format(
+        ret.cmd,
+        ret.exit,
+        ret.stderr
+      )
+    )
   end
 
-  if ret.signal == 9 then
-    error("SIGKILL: curl command timed out")
-  end
+  if ret.signal == 9 then error("SIGKILL: curl command timed out") end
 
   local split = vim.split(ret.stdout, "\n")
   if #split < 2 then
     error([[curl response does not follow the <body \n\n status_code> pattern]])
   end
   local resp, status = json.decode(split[1]), tonumber(split[2])
-  if status == 200 then
-    ce.cache.get()[url] = resp
-  end
+  if status == 200 then ce.cache.get()[url] = resp end
   return status, resp
 end)
 
@@ -61,18 +59,20 @@ M.post = ce.async.void(function(url, body)
     url,
   }
   local ok, ret = pcall(ce.job.curl, args)
-  if not ok then
-    error("curl executable not found")
-  end
+  if not ok then error("curl executable not found") end
 
   ce.async.scheduler()
   if ret.exit ~= 0 then
-    error(("curl error:\n command: %s \n exit_code %d\n stderr: %s"):format(ret.cmd, ret.exit, ret.stderr))
+    error(
+      ("curl error:\n command: %s \n exit_code %d\n stderr: %s"):format(
+        ret.cmd,
+        ret.exit,
+        ret.stderr
+      )
+    )
   end
 
-  if ret.signal == 9 then
-    error("SIGKILL: curl command timed out")
-  end
+  if ret.signal == 9 then error("SIGKILL: curl command timed out") end
 
   local split = vim.split(ret.stdout, "\n")
   if #split < 2 then

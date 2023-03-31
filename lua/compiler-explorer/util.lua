@@ -15,9 +15,7 @@ function M.create_window_buffer(source_bufnr, compiler_id, new_window)
     vim.cmd("vsplit")
   else
     api.nvim_set_current_win(winid)
-    if new_window then
-      vim.cmd(conf.split)
-    end
+    if new_window then vim.cmd(conf.split) end
   end
 
   local asm_bufnr = api.nvim_create_buf(false, true)
@@ -87,9 +85,7 @@ function M.start_spinner(text)
   M.timer:start(0, interval, function()
     i = (i == #frames) and 1 or (i + 1)
     local msg = text .. " " .. frames[i]
-    vim.schedule(function()
-      api.nvim_echo({ { msg, "None" } }, false, {})
-    end)
+    vim.schedule(function() api.nvim_echo({ { msg, "None" } }, false, {}) end)
   end)
 end
 

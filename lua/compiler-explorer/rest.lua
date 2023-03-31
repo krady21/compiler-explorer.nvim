@@ -15,9 +15,7 @@ local post = function(url, req_body, spinner_text)
   local ok, status, body = pcall(ce.http.post, url, req_body)
   ce.util.stop_spinner()
 
-  if not ok then
-    error(status)
-  end
+  if not ok then error(status) end
 
   if status ~= 200 then
     error(("POST %s returned %d. %s"):format(url, status, body.error), 0)
@@ -75,9 +73,7 @@ M.compilers_get = function(lang)
 
   local body = get(url)
   if lang then
-    return vim.tbl_filter(function(el)
-      return el.lang == lang
-    end, body)
+    return vim.tbl_filter(function(el) return el.lang == lang end, body)
   end
   return body
 end
@@ -120,9 +116,7 @@ local function body_from_args(args)
   local filters = vim.tbl_keys(body.options.filters)
 
   for key, value in pairs(args) do
-    if vim.tbl_contains(filters, key) then
-      body.options.filters[key] = value
-    end
+    if vim.tbl_contains(filters, key) then body.options.filters[key] = value end
 
     if key == "compiler" or key == "source" or key == "lang" then
       body[key] = value
@@ -152,7 +146,8 @@ end
 
 M.compile_post = function(compiler_id, req_body)
   local conf = ce.config.get_config()
-  local url = table.concat({ conf.url, "api", "compiler", compiler_id, "compile" }, "/")
+  local url =
+    table.concat({ conf.url, "api", "compiler", compiler_id, "compile" }, "/")
 
   return post(url, req_body, "Compiling")
 end
@@ -166,24 +161,22 @@ end
 
 M.load_example_get = function(lang, name)
   local conf = ce.config.get_config()
-  local url = table.concat({ conf.url, "source", "builtin", "load", lang, name }, "/")
+  local url =
+    table.concat({ conf.url, "source", "builtin", "load", lang, name }, "/")
 
   return get(url)
 end
 
 function M.check_compiler(compiler_id)
-  if compiler_id == nil or type(compiler_id) ~= "string" then
-    return nil
-  end
+  if compiler_id == nil or type(compiler_id) ~= "string" then return nil end
 
   local compilers = M.compilers_get()
-  local filtered = vim.tbl_filter(function(compiler)
-    return compiler.id == compiler_id
-  end, compilers)
+  local filtered = vim.tbl_filter(
+    function(compiler) return compiler.id == compiler_id end,
+    compilers
+  )
 
-  if vim.tbl_isempty(filtered) then
-    error("incorrect compiler id")
-  end
+  if vim.tbl_isempty(filtered) then error("incorrect compiler id") end
   return filtered[1]
 end
 

@@ -33,9 +33,7 @@ M.create = function()
     end
   end
 
-  if vim.tbl_isempty(sessions) then
-    return nil
-  end
+  if vim.tbl_isempty(sessions) then return nil end
 
   return ce.base64.encode(json.encode({ sessions = sessions }))
 end
@@ -48,18 +46,17 @@ M.save_info = function(source_bufnr, asm_bufnr, body)
     id = body.compiler,
     options = body.options.userArguments,
     filters = body.options.filters,
-    libs = vim.tbl_map(function(lib)
-      return { name = lib.id, ver = lib.version }
-    end, body.options.libraries),
+    libs = vim.tbl_map(
+      function(lib) return { name = lib.id, ver = lib.version } end,
+      body.options.libraries
+    ),
   }
 end
 
 M.get_last_bufwinid = function(source_bufnr)
   for _, asm_buffer in ipairs(vim.tbl_keys(M.state[source_bufnr] or {})) do
     local winid = fn.bufwinid(asm_buffer)
-    if winid ~= -1 then
-      return winid
-    end
+    if winid ~= -1 then return winid end
   end
   return nil
 end

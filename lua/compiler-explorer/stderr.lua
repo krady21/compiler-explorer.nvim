@@ -12,7 +12,11 @@ local severity_map = {
 }
 
 local function is_full_err(err)
-  return err.tag and err.tag.column and err.tag.line and err.tag.severity and err.tag.text
+  return err.tag
+    and err.tag.column
+    and err.tag.line
+    and err.tag.severity
+    and err.tag.text
 end
 
 local function trim_msg_severity(err)
@@ -21,9 +25,7 @@ local function trim_msg_severity(err)
 end
 
 M.add_diagnostics = function(stderr, bufnr, offset)
-  if stderr == vim.NIL or stderr == nil then
-    return
-  end
+  if stderr == vim.NIL or stderr == nil then return end
 
   local conf = ce.config.get_config()
   local ns = api.nvim_create_namespace("ce-diagnostics")

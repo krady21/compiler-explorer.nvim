@@ -23,9 +23,7 @@ end)
 
 M.check = function()
   run_checks()
-  vim.wait(2000, function()
-    return is_reachable ~= nil
-  end)
+  vim.wait(2000, function() return is_reachable ~= nil end)
 
   health.report_start("compiler-explorer.nvim report")
 
@@ -47,11 +45,16 @@ M.check = function()
 
   local hostname = ce.config.get_config().url
   if not is_reachable then
-    health.report_error(("GET %s/api/languages failed. Server is unreachable."):format(hostname), {
-      "check if the hostname is in the correct format",
-    })
+    health.report_error(
+      ("GET %s/api/languages failed. Server is unreachable."):format(hostname),
+      {
+        "check if the hostname is in the correct format",
+      }
+    )
   else
-    health.report_ok(("GET %s/api/languages successful. Server is reachable."):format(hostname))
+    health.report_ok(
+      ("GET %s/api/languages successful. Server is reachable."):format(hostname)
+    )
   end
 end
 

@@ -6,17 +6,13 @@ local M = {}
 
 local function close_pipes(...)
   for _, pipe in ipairs({ ... }) do
-    if not pipe:is_closing() then
-      pipe:close()
-    end
+    if not pipe:is_closing() then pipe:close() end
   end
 end
 
 local function close_timer(timer)
   timer:stop()
-  if not timer:is_closing() then
-    timer:close()
-  end
+  if not timer:is_closing() then timer:close() end
 end
 
 local function read_stop_pipes(...)
@@ -62,25 +58,17 @@ local spawn = function(cmd, args, cb)
   end
 
   timer = uv.new_timer()
-  timer:start(conf.job_timeout, 0, function()
-    handle:kill("sigkill")
-  end)
+  timer:start(conf.job_timeout, 0, function() handle:kill("sigkill") end)
 
-  stdout:read_start(function(_, data)
-    table.insert(stdout_data, data)
-  end)
-  stderr:read_start(function(_, data)
-    table.insert(stderr_data, data)
-  end)
+  stdout:read_start(function(_, data) table.insert(stdout_data, data) end)
+  stderr:read_start(function(_, data) table.insert(stderr_data, data) end)
 end
 
 local start = ce.async.wrap(spawn, 3)
 
 setmetatable(M, {
   __index = function(_, key)
-    return ce.async.void(function(args)
-      return start(key, args)
-    end)
+    return ce.async.void(function(args) return start(key, args) end)
   end,
 })
 

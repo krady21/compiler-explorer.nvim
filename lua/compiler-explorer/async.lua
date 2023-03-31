@@ -5,18 +5,14 @@ local main_co_or_nil = coroutine.running()
 function M.wrap(func, argc)
   assert(argc)
   return function(...)
-    if coroutine.running() == main_co_or_nil then
-      return func(...)
-    end
+    if coroutine.running() == main_co_or_nil then return func(...) end
     return coroutine.yield(func, argc, ...)
   end
 end
 
 function M.void(func)
   return function(...)
-    if coroutine.running() ~= main_co_or_nil then
-      return func(...)
-    end
+    if coroutine.running() ~= main_co_or_nil then return func(...) end
 
     local co = coroutine.create(func)
 
@@ -25,12 +21,16 @@ function M.void(func)
       local stat, err_or_fn, nargs = unpack(ret)
 
       if not stat then
-        error(string.format("The coroutine failed with this message: %s\n%s", err_or_fn, debug.traceback(co)))
+        error(
+          string.format(
+            "The coroutine failed with this message: %s\n%s",
+            err_or_fn,
+            debug.traceback(co)
+          )
+        )
       end
 
-      if coroutine.status(co) == "dead" then
-        return
-      end
+      if coroutine.status(co) == "dead" then return end
 
       assert(vim.is_callable(err_or_fn), "type error :: expected func")
 
