@@ -9,7 +9,7 @@ Compile your code and explore assembly from Neovim using the
 
 ## Demo
 ![Preview](https://i.imgur.com/Dy7TnUd.gif)
-This is what the interface looks like using the `vim.ui.select/input` provided
+This is what the interface looks like using the `vim.ui` provided
 by [dressing.nvim](https://github.com/stevearc/dressing.nvim) with the
 [fzf-lua](https://github.com/ibhagwan/fzf-lua) backend and the `vim.notify`
 provided by [nvim-notify](https://github.com/rcarriga/nvim-notify).
@@ -44,7 +44,7 @@ You can verify these dependencies by running `:checkhealth compiler-explorer`
 <details>
 <summary>Optional</summary>
 <br>
-<a href="https://github.com/rcarriga/nvim-notify">notify.nvim</a> or another plugin that overrides <code>vim.notify</code>
+<a href="https://github.com/rcarriga/nvim-notify">nvim-notify</a> or another plugin that overrides <code>vim.notify</code>
 </details>
 
 ## Installation
@@ -86,7 +86,9 @@ compiler-explorer-commands` or the table below:
 | `:CEShowTooltip` | Show information about a specific instruction under cursor. | assembly buffer |
 | `:CEGotoLabel` | Jump to the label definition under cursor. | assembly buffer |
 
-### Examples
+<details>
+<summary>Examples</summary>
+
 - `:CECompile` will prompt the user to select the compiler and flags
   interactively using `vim.ui.select` and `vim.ui.input`.
 - `:CECompile compiler=g121 flags=-O2 flags=-Wall` specify the
@@ -102,13 +104,18 @@ compiler-explorer-commands` or the table below:
 - `:CECompileLive` creates an autcommand that runs `:CECompile` every time
   the buffer is saved (`BufWritePost`).
 
+</details>
+
+
 
 ## Configuration
 [compiler-explorer.nvim](https://github.com/krady21/compiler-explorer.nvim)
 works out of the box without configuration. If you want to change some of its
 options (like using a local instance of compiler-explorer), you can do so
-through the `setup()` function. You can find all the options
-[here](https://github.com/krady21/compiler-explorer.nvim/blob/master/lua/compiler-explorer/config.lua).
+through the `setup()` function.
+
+<details>
+<summary>Default options</summary>
 
 ```lua
 require("compiler-explorer").setup({
@@ -138,6 +145,8 @@ require("compiler-explorer").setup({
   },
 })
 ```
+</details>
+
 
 ## API Coverage:
 - [x] `GET  /api/languages`
