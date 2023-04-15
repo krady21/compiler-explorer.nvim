@@ -5,6 +5,16 @@ local diagnostic = vim.diagnostic
 
 local M = {}
 
+local ns = api.nvim_create_namespace("ce-diagnostics")
+
+local default_diagnostics = {
+  underline = false,
+  virtual_text = false,
+  signs = false,
+}
+
+diagnostic.config(default_diagnostics, ns)
+
 local severity_map = {
   [1] = diagnostic.severity.INFO,
   [2] = diagnostic.severity.WARN,
@@ -28,7 +38,6 @@ M.add_diagnostics = function(stderr, bufnr, offset)
   if stderr == vim.NIL or stderr == nil then return end
 
   local conf = ce.config.get_config()
-  local ns = api.nvim_create_namespace("ce-diagnostics")
 
   local diagnostics = {}
   for _, err in ipairs(stderr) do
@@ -44,7 +53,7 @@ M.add_diagnostics = function(stderr, bufnr, offset)
   end
 
   diagnostic.reset(ns)
-  diagnostic.set(ns, bufnr, diagnostics, conf.diagnostics)
+  diagnostic.set(ns, bufnr, diagnostics)
   diagnostic.setqflist({
     namespace = ns,
     open = conf.open_qflist and (#diagnostics > 0),

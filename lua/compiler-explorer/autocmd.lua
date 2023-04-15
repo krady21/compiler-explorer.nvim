@@ -25,14 +25,15 @@ local function create_matching_lines_dicts(asm, offset)
   return source_to_asm, asm_to_source
 end
 
-M.create_autocmd = function(source_bufnr, asm_bufnr, resp, offset)
+M.init_line_match = function(source_bufnr, asm_bufnr, resp, offset)
+  local conf = ce.config.get_config()
+  if not conf.line_match.highlight and not conf.line_match.jump then return end
+
   local source_to_asm, asm_to_source = create_matching_lines_dicts(resp, offset)
   if vim.tbl_isempty(source_to_asm) or vim.tbl_isempty(asm_to_source) then
     return
   end
 
-  local conf = ce.config.get_config()
-  local hl_group = conf.autocmd.hl
   local gid =
     api.nvim_create_augroup("CompilerExplorer" .. asm_bufnr, { clear = true })
   local ns = api.nvim_create_namespace("ce-autocmds")
@@ -52,22 +53,26 @@ M.create_autocmd = function(source_bufnr, asm_bufnr, resp, offset)
 
     if type(hl_list) ~= "table" then hl_list = { hl_list } end
 
-    for _, linenr in ipairs(hl_list) do
-      -- highlight the matching line
-      pcall(
-        api.nvim_buf_add_highlight,
-        other_buf,
-        ns,
-        hl_group,
-        linenr - 1,
-        0,
-        -1
-      )
+    if conf.line_match.highlight then
+      for _, linenr in ipairs(hl_list) do
+        -- highlight the matching line
+        pcall(
+          api.nvim_buf_add_highlight,
+          other_buf,
+          ns,
+          "CursorLine",
+          linenr - 1,
+          0,
+          -1
+        )
+      end
     end
 
-    local winid = fn.bufwinid(other_buf)
     -- move cursor to first matching line
-    pcall(api.nvim_win_set_cursor, winid, { hl_list[1], 0 })
+    if conf.line_match.jump then
+      local winid = fn.bufwinid(other_buf)
+      pcall(api.nvim_win_set_cursor, winid, { hl_list[1], 0 })
+    end
   end
 
   api.nvim_create_autocmd({ "CursorMoved" }, {

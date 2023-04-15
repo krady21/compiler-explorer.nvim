@@ -58,7 +58,7 @@ local spawn = function(cmd, args, cb)
   end
 
   timer = uv.new_timer()
-  timer:start(conf.job_timeout, 0, function() handle:kill("sigkill") end)
+  timer:start(conf.job_timeout_ms, 0, function() handle:kill("sigkill") end)
 
   stdout:read_start(function(_, data) table.insert(stdout_data, data) end)
   stderr:read_start(function(_, data) table.insert(stderr_data, data) end)

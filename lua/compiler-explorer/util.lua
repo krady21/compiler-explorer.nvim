@@ -9,8 +9,7 @@ local M = {}
 function M.create_window_buffer(source_bufnr, compiler_id, new_window)
   local conf = ce.config.get_config()
 
-  local clientstate = require("compiler-explorer.clientstate")
-  local winid = clientstate.get_last_bufwinid(source_bufnr)
+  local winid = ce.clientstate.get_last_bufwinid(source_bufnr)
   if winid == nil then
     vim.cmd("vsplit")
   else
@@ -31,7 +30,6 @@ function M.create_window_buffer(source_bufnr, compiler_id, new_window)
 end
 
 function M.set_binary_extmarks(lines, bufnr)
-  local conf = ce.config.get_config()
   local ns = api.nvim_create_namespace("ce-binary")
 
   for i, line in ipairs(lines) do
@@ -41,8 +39,8 @@ function M.set_binary_extmarks(lines, bufnr)
 
       api.nvim_buf_set_extmark(bufnr, ns, i - 1, 0, {
         virt_lines_above = true,
-        virt_lines = { { { opcodes, conf.binary_hl } } },
-        virt_text = { { address, conf.binary_hl } },
+        virt_lines = { { { opcodes, "Comment" } } },
+        virt_text = { { address, "Comment" } },
       })
     end
   end
@@ -76,9 +74,8 @@ function M.parse_args(fargs)
 end
 
 function M.start_spinner(text)
-  local conf = ce.config.get_config()
-  local frames = conf.spinner_frames
-  local interval = conf.spinner_interval
+  local frames = { "⣼", "⣹", "⢻", "⠿", "⡟", "⣏", "⣧", "⣶" }
+  local interval = 100
 
   local i = 1
   M.timer = uv.new_timer()

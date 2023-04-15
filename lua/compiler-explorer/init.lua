@@ -156,8 +156,8 @@ M.compile = ce.async.void(function(opts, live)
 
   ce.stderr.add_diagnostics(response.stderr, source_bufnr, opts.line1 - 1)
 
-  if conf.autocmd.enable and not args.binary then
-    ce.autocmd.create_autocmd(
+  if not args.binary then
+    ce.autocmd.init_line_match(
       source_bufnr,
       asm_bufnr,
       response.asm,
