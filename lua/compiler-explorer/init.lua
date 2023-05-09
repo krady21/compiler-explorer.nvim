@@ -68,6 +68,7 @@ M.compile = ce.async.void(function(opts, live)
     end
 
     if not lang then return end
+    vim.cmd("redraw")
 
     -- Extend config with config specific to the language
     local lang_conf = conf.languages[lang.id]
@@ -91,6 +92,7 @@ M.compile = ce.async.void(function(opts, live)
       })
 
       if not compiler then return end
+      vim.cmd("redraw")
     end
 
     -- Choose compiler options
@@ -98,6 +100,7 @@ M.compile = ce.async.void(function(opts, live)
       prompt = "Select compiler options> ",
       default = conf.compiler_flags,
     })
+    vim.cmd("redraw")
     args.compiler = compiler
   end
 
@@ -239,6 +242,7 @@ M.add_library = ce.async.void(function()
   end
 
   if not lang then return end
+  vim.cmd("redraw")
 
   local libs = ce.rest.libraries_get(lang.id)
   if vim.tbl_isempty(libs) then
@@ -253,6 +257,7 @@ M.add_library = ce.async.void(function()
   })
 
   if not lib then return end
+  vim.cmd("redraw")
 
   -- Choose version
   local version = vim_select(lib.versions, {
@@ -261,6 +266,7 @@ M.add_library = ce.async.void(function()
   })
 
   if not version then return end
+  vim.cmd("redraw")
 
   -- Add lib to buffer variable, overwriting previous library version if already present
   vim.b.libs = vim.tbl_deep_extend(
@@ -285,6 +291,7 @@ M.format = ce.async.void(function()
     format_item = function(item) return item.name end,
   })
   if not formatter then return end
+  vim.cmd("redraw")
 
   local style = formatter.styles[1] or "__DefaultStyle"
   if #formatter.styles > 0 then
@@ -294,6 +301,7 @@ M.format = ce.async.void(function()
     })
 
     if not style then return end
+    vim.cmd("redraw")
   end
 
   local body = ce.rest.create_format_body(source, style)
@@ -367,6 +375,7 @@ M.load_example = ce.async.void(function()
   })
 
   if not lang_id then return end
+  vim.cmd("redraw")
 
   local example = vim_select(examples_by_lang[lang_id], {
     prompt = "Select example> ",

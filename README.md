@@ -71,7 +71,7 @@ Plug 'krady21/compiler-explorer.nvim'
 ## Commands
 The suggested way to use
 [compiler-explorer.nvim](https://github.com/krady21/compiler-explorer.nvim) is
-through the vim commands it provides. You can refer to `:h
+through the vim commands provided. You can refer to `:h
 compiler-explorer-commands` or the table below:
 
 | Command | Description | Called from |
