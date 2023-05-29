@@ -25,34 +25,34 @@ M.check = function()
   run_checks()
   vim.wait(2000, function() return is_reachable ~= nil end)
 
-  health.report_start("compiler-explorer.nvim report")
+  health.start("compiler-explorer.nvim report")
 
   if not has_nvim_version then
-    health.report_error("neovim version >=0.7 is required")
+    health.error("neovim version >=0.7 is required")
   else
-    health.report_ok("neovim has version 0.7 or later")
+    health.ok("neovim has version 0.7 or later")
   end
 
   if not has_curl then
-    health.report_error("curl executable not found.", {
+    health.error("curl executable not found.", {
       "linux: sudo apt-get install curl",
       "mac: brew install curl",
     })
     return
   else
-    health.report_ok("curl executable was found.")
+    health.ok("curl executable was found.")
   end
 
   local hostname = ce.config.get_config().url
   if not is_reachable then
-    health.report_error(
+    health.error(
       ("GET %s/api/languages failed. Server is unreachable."):format(hostname),
       {
         "check if the hostname is in the correct format",
       }
     )
   else
-    health.report_ok(
+    health.ok(
       ("GET %s/api/languages successful. Server is reachable."):format(hostname)
     )
   end
