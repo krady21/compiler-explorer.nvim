@@ -73,7 +73,10 @@ M.compilers_get = function(lang)
 
   local body = get(url)
   if lang then
-    return vim.tbl_filter(function(el) return el.lang == lang end, body)
+    return vim
+      .iter(body)
+      :filter(function(el) return el.lang == lang end)
+      :totable()
   end
   return body
 end
@@ -170,14 +173,12 @@ end
 function M.check_compiler(compiler_id)
   if compiler_id == nil or type(compiler_id) ~= "string" then return nil end
 
-  local compilers = M.compilers_get()
-  local filtered = vim.tbl_filter(
-    function(compiler) return compiler.id == compiler_id end,
-    compilers
+  local found_compiler = vim.iter(M.compilers_get()):find(
+    function(compiler) return compiler.id == compiler_id end
   )
 
-  if vim.tbl_isempty(filtered) then error("incorrect compiler id") end
-  return filtered[1]
+  if not found_compiler then error("incorrect compiler id") end
+  return found_compiler
 end
 
 return M

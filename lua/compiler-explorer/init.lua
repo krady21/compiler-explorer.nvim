@@ -43,10 +43,12 @@ M.compile = ce.async.void(function(opts, live)
     if args.inferLang then
       local extension = "." .. fn.expand("%:e")
 
-      possible_langs = vim.tbl_filter(
-        function(el) return vim.tbl_contains(el.extensions, extension) end,
-        lang_list
-      )
+      possible_langs = vim
+        .iter(lang_list)
+        :filter(
+          function(l) return vim.tbl_contains(l.extensions, extension) end
+        )
+        :totable()
 
       if vim.tbl_isempty(possible_langs) then
         ce.alert.error(
@@ -132,10 +134,10 @@ M.compile = ce.async.void(function(opts, live)
 
   if not ok then ce.alert.error(response) end
 
-  local asm_lines = vim.tbl_map(
-    function(line) return line.text end,
-    response.asm
-  )
+  local asm_lines = vim
+    .iter(response.asm)
+    :map(function(line) return line.text end)
+    :totable()
 
   local asm_bufnr =
     ce.util.create_window_buffer(source_bufnr, compiler.id, opts.bang)
@@ -217,10 +219,10 @@ M.add_library = ce.async.void(function()
   -- Infer language based on extension and prompt user.
   local extension = "." .. fn.expand("%:e")
 
-  local possible_langs = vim.tbl_filter(
-    function(el) return vim.tbl_contains(el.extensions, extension) end,
-    lang_list
-  )
+  local possible_langs = vim
+    .iter(lang_list)
+    :filter(function(el) return vim.tbl_contains(el.extensions, extension) end)
+    :totable()
 
   if vim.tbl_isempty(possible_langs) then
     ce.alert.error(
@@ -385,11 +387,10 @@ M.load_example = ce.async.void(function()
   local lines = vim.split(response.file, "\n")
 
   langs = ce.rest.languages_get()
-  local filtered = vim.tbl_filter(
-    function(el) return el.id == lang_id end,
-    langs
-  )
-  local extension = filtered[1].extensions[1]
+  local selected_lang = vim
+    .iter(langs)
+    :find(function(el) return el.id == lang_id end)
+  local extension = selected_lang.extensions[1]
   local bufname = example.file .. extension
 
   vim.cmd("tabedit")

@@ -50,16 +50,16 @@ M.get_compilers = function(extension)
   if extension == nil then return compilers end
 
   local langs = cache[languages_endpoint] or {}
-  local filtered_langs = vim.tbl_filter(
-    function(l) return vim.tbl_contains(l.extensions, extension) end,
-    langs
-  )
-  local filtered_ids = vim.tbl_map(function(l) return l.id end, filtered_langs)
+  local filtered_ids = vim
+    .iter(langs)
+    :filter(function(l) return vim.tbl_contains(l.extensions, extension) end)
+    :map(function(l) return l.id end)
+    :totable()
 
-  return vim.tbl_filter(
-    function(c) return vim.tbl_contains(filtered_ids, c.lang) end,
-    compilers
-  )
+  return vim
+    .iter(compilers)
+    :filter(function(c) return vim.tbl_contains(filtered_ids, c.lang) end)
+    :totable()
 end
 
 M.delete = function()
@@ -75,9 +75,9 @@ M.complete_fn = function(arg_lead)
   if vim.startswith(arg_lead, "compiler=") then
     local extension = "." .. fn.expand("%:e")
     local compilers = M.get_compilers(extension)
-    list = vim.tbl_map(function(c) return [[compiler=]] .. c.id end, compilers)
+    list = vim.iter(compilers):map(function(c) return [[compiler=]] .. c.id end)
   else
-    list = {
+    list = vim.iter({
       "binary",
       "commentOnly",
       "demangle",
@@ -90,13 +90,12 @@ M.complete_fn = function(arg_lead)
       "compiler",
       "flags",
       "inferLang",
-    }
+    })
   end
 
-  return vim.tbl_filter(
-    function(el) return string.sub(el, 1, #arg_lead) == arg_lead end,
-    list
-  )
+  return list
+    :filter(function(el) return string.sub(el, 1, #arg_lead) == arg_lead end)
+    :totable()
 end
 
 return M

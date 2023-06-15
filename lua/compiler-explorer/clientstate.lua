@@ -46,10 +46,10 @@ M.save_info = function(source_bufnr, asm_bufnr, body)
     id = body.compiler,
     options = body.options.userArguments,
     filters = body.options.filters,
-    libs = vim.tbl_map(
-      function(lib) return { name = lib.id, ver = lib.version } end,
-      body.options.libraries
-    ),
+    libs = vim
+      .iter(body.options.libraries)
+      :map(function(lib) return { name = lib.id, ver = lib.version } end)
+      :totable(),
   }
 end
 
