@@ -124,7 +124,7 @@ local function body_from_args(args)
 
     -- Allow passing flags more than once.
     if key == "flags" then
-      body.options.userArguments = body.options.userArguments .. value
+      body.options.userArguments = body.options.userArguments .. " " .. value
     end
   end
   return body
