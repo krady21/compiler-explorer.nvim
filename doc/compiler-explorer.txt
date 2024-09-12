@@ -29,7 +29,7 @@ COMMANDS                                          *compiler-explorer-commands*
                           prompted to select it interactively using *vim.ui.select*.
 
                         • flags={compiler-flags} Compiler flags
-                          comma•separated.
+                          space•separated.
 
                         • inferLang={true/false} If true, infer the language
                           based on file extension, otherwise prompt the user
