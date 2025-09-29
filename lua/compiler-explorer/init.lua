@@ -117,7 +117,7 @@ M.compile = ce.async.void(function(opts, live)
           line1 = 1,
           line2 = fn.line("$"),
           fargs = {
-            "compiler=" .. args.compiler.id,
+            "compiler=" .. (args.compiler.id or args.compiler),
             "flags=" .. (args.flags or ""),
           },
         }, false)
