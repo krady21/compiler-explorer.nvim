@@ -57,13 +57,16 @@ M.init_line_match = function(source_bufnr, asm_bufnr, resp, offset)
       for _, linenr in ipairs(hl_list) do
         -- highlight the matching line
         pcall(
-          api.nvim_buf_add_highlight,
+          vim.hl.range,
           other_buf,
           ns,
           "CursorLine",
-          linenr - 1,
-          0,
-          -1
+          { linenr - 1, 0 }, 
+          { linenr - 1, -1},
+          {
+            inclusive = inclusive,
+            regtype = "V"
+          }
         )
       end
     end
