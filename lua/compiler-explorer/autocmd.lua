@@ -68,10 +68,13 @@ M.init_line_match = function(source_bufnr, asm_bufnr, resp, offset)
       end
     end
 
-    -- move cursor to first matching line
+    -- move the cursor to the first matching line and center the window
     if conf.line_match.jump then
       local winid = fn.bufwinid(other_buf)
       pcall(api.nvim_win_set_cursor, winid, { hl_list[1], 0 })
+      api.nvim_win_call(winid, function()
+        vim.cmd("normal! zz")
+      end)
     end
   end
 
