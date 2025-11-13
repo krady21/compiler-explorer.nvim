@@ -62,12 +62,11 @@ function M.parse_args(fargs)
   args.inferLang = conf.infer_lang
 
   for _, f in ipairs(fargs) do
-    local split = vim.split(f, "=")
-    if #split == 1 then
-      args[split[1]] = true
-    elseif #split == 2 then
-      args[split[1]] = to_bool(split[2])
+    local arg, value = f:match("^(.-)=(.*)$")
+    if arg == nil or value == nil then
+      ::continue::
     end
+    args[arg] = to_bool(value)
   end
 
   return args
