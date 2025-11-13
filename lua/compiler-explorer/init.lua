@@ -141,7 +141,7 @@ M.compile = ce.async.void(function(opts, live)
     ce.util.create_window_buffer(source_bufnr, compiler.id, opts.bang)
   api.nvim_buf_clear_namespace(asm_bufnr, -1, 0, -1)
 
-  api.nvim_buf_set_option(asm_bufnr, "modifiable", true)
+  api.nvim_set_option_value("modifiable", true, { buf = asm_bufnr })
   api.nvim_buf_set_lines(asm_bufnr, 0, -1, false, asm_lines)
 
   if response.code == 0 then
@@ -155,7 +155,7 @@ M.compile = ce.async.void(function(opts, live)
   -- Return to source window
   api.nvim_set_current_win(source_winnr)
 
-  api.nvim_buf_set_option(asm_bufnr, "modifiable", false)
+  api.nvim_set_option_value("modifiable", false, { buf = asm_bufnr })
 
   ce.stderr.add_diagnostics(response.stderr, source_bufnr, opts.line1 - 1)
 
@@ -182,7 +182,6 @@ M.compile = ce.async.void(function(opts, live)
   api.nvim_buf_create_user_command(asm_bufnr, "CEGotoLabel", M.goto_label, {})
 end)
 
--- WARN: Experimental
 M.open_website = function()
   local cmd
   if fn.executable("xdg-open") == 1 then
@@ -395,11 +394,11 @@ M.load_example = ce.async.void(function()
   vim.cmd("tabedit")
   api.nvim_buf_set_lines(0, 0, -1, false, lines)
   api.nvim_buf_set_name(0, bufname)
-  api.nvim_buf_set_option(0, "bufhidden", "wipe")
+  api.nvim_set_option_value("bufhidden", "wipe", { buf = 0 })
 
   if fn.has("nvim-0.8") then
     local ft = vim.filetype.match({ filename = bufname })
-    api.nvim_buf_set_option(0, "filetype", ft)
+    api.nvim_set_option_value("filetype", ft, { buf = 0 })
   else
     vim.filetype.match(bufname, 0)
   end
