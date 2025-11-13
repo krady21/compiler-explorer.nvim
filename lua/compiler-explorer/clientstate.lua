@@ -1,7 +1,6 @@
 local ce = require("compiler-explorer.lazy")
 
 local api, fn = vim.api, vim.fn
-local json = vim.json
 
 local M = {}
 
@@ -35,7 +34,7 @@ M.create = function()
 
   if vim.tbl_isempty(sessions) then return nil end
 
-  return ce.base64.encode(json.encode({ sessions = sessions }))
+  return vim.base64.encode(vim.json.encode({ sessions = sessions }))
 end
 
 M.save_info = function(source_bufnr, asm_bufnr, body)

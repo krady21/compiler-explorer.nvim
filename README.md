@@ -32,7 +32,7 @@ provided by [nvim-notify](https://github.com/rcarriga/nvim-notify).
 ## Dependencies
 You can verify these dependencies by running `:checkhealth compiler-explorer`
 
-- [Neovim](https://neovim.io/) >= 0.7
+- [Neovim](https://neovim.io/) >= 0.10
 - [curl](https://curl.se/)
 
 <details>
@@ -160,4 +160,3 @@ You can find the full API docs [here](https://github.com/compiler-explorer/compi
 
 ## Inspiration
 - The async.lua and alert.lua modules are inspired from [gitsigns.nvim](https://github.com/lewis6991/gitsigns.nvim) .
-- The base64.lua module is taken from [lbase64](https://github.com/iskolbin/lbase64)
