@@ -26,10 +26,12 @@ COMMANDS                                          *compiler-explorer-commands*
                         • compiler={compiler-id} compiler•id as received from
                           <https://godbolt.org/api/compilers>, can be tab
                           completed. If not specified, the user will be
-                          prompted to select it interactively using *vim.ui.select*.
+                          prompted to select it interactively using
+                          *vim.ui.select*.
 
-                        • flags={compiler-flags} Compiler flags
-                          comma•separated.
+                        • flags={compiler-flags} Pass compiler flags
+                          separated by "\ ". 
+                          Example: `:CECompile flags=-O2\ -g`
 
                         • inferLang={true/false} If true, infer the language
                           based on file extension, otherwise prompt the user

@@ -91,7 +91,7 @@ compiler-explorer-commands` or the table below:
 
 - `:CECompile` will prompt the user to select the compiler and flags
   interactively using `vim.ui.select` and `vim.ui.input`.
-- `:CECompile compiler=g121 flags=-O2 flags=-Wall` specify the
+- `:CECompile compiler=g121 flags=-O2\ -Wall` specify the
   compiler and flags as command arguments.
 - `':<,'>CECompile` will compile a visual selection.
 - `:CECompile!` will open the assembly output in a new window. Not adding
