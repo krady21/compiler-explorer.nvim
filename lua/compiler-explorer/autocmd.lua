@@ -7,8 +7,8 @@ local M = {}
 local function create_matching_lines_dicts(asm, offset)
   local source_to_asm, asm_to_source = {}, {}
   for asm_idx, line_obj in ipairs(asm) do
-    if
-      line_obj.source ~= vim.NIL
+    if line_obj.source ~= nil
+      and line_obj.source ~= vim.NIL
       and line_obj.source.line ~= vim.NIL
       and line_obj.source.file == vim.NIL
     then
