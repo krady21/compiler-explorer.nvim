@@ -8,7 +8,7 @@ local M = {}
 local has_nvim_version, has_curl, is_reachable
 
 local run_checks = ce.async.void(function()
-  has_nvim_version = fn.has("nvim-0.7") > 0
+  has_nvim_version = fn.has("nvim-0.10") > 0
   has_curl = fn.executable("curl") > 0
 
   if not has_curl then
@@ -28,9 +28,9 @@ M.check = function()
   health.start("compiler-explorer.nvim report")
 
   if not has_nvim_version then
-    health.error("neovim version >=0.7 is required")
+    health.error("neovim version >=0.10 is required")
   else
-    health.ok("neovim has version 0.7 or later")
+    health.ok("neovim has version 0.10 or later")
   end
 
   if not has_curl then
