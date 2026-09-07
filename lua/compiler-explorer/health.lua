@@ -2,15 +2,17 @@ local ce = require("compiler-explorer.lazy")
 
 local fn = vim.fn
 local health = vim.health
+local async = vim.async
 
 local M = {}
 
 local has_nvim_version, has_curl, is_reachable
 
-local run_checks = ce.async.void(function()
+local run_checks = async.run(function()
   has_nvim_version = fn.has("nvim-0.10") > 0
   has_curl = fn.executable("curl") > 0
 
+  -- TODO: proper cancellation
   if not has_curl then
     is_reachable = false
     return
@@ -18,12 +20,11 @@ local run_checks = ce.async.void(function()
 
   -- Ensure the next call is not cached.
   ce.cache.delete()
-  is_reachable = pcall(ce.rest.languages_get)
+  is_reachable = async.pawait(ce.rest.languages_get)
 end)
 
 M.check = function()
-  run_checks()
-  vim.wait(2000, function() return is_reachable ~= nil end)
+  vim.await(run_checks)
 
   health.start("compiler-explorer.nvim report")
 

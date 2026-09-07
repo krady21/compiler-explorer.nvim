@@ -1,19 +1,19 @@
 local ce = require("compiler-explorer.lazy")
 
 local api, fn = vim.api, vim.fn
+local async = vim.async
 
 local M = {}
 
 -- Return a function to avoid caching the vim.ui functions
-local get_select = function() return ce.async.wrap(vim.ui.select, 3) end
-local get_input = function() return ce.async.wrap(vim.ui.input, 2) end
+local ui_select = async.wrap(3, vim.ui.select)
+local ui_input = async.wrap(2, vim.ui.input)
+local scheduler = async.wrap(1, vim.schedule)
 
 M.setup = function(user_config) ce.config.setup(user_config or {}) end
 
-M.compile = ce.async.void(function(opts, live)
+local compile = function(opts, live)
   local conf = ce.config.get_config()
-  local vim_select = get_select()
-  local vim_input = get_input()
 
   local args = ce.util.parse_args(opts.fargs)
 
@@ -37,6 +37,7 @@ M.compile = ce.async.void(function(opts, live)
   local lang
   if not compiler then
     local lang_list = ce.rest.languages_get()
+    scheduler()
     local possible_langs = lang_list
 
     -- Infer language based on extension and prompt user.
@@ -61,7 +62,7 @@ M.compile = ce.async.void(function(opts, live)
       lang = possible_langs[1]
     else
       -- Choose language
-      lang = vim_select(possible_langs, {
+      lang = ui_select(possible_langs, {
         prompt = "Select language> ",
         format_item = function(item) return item.name end,
       })
@@ -86,7 +87,7 @@ M.compile = ce.async.void(function(opts, live)
     else
       -- Choose compiler
       local compilers = ce.rest.compilers_get(lang.id)
-      compiler = vim_select(compilers, {
+      compiler = ui_select(compilers, {
         prompt = "Select compiler> ",
         format_item = function(item) return item.name end,
       })
@@ -95,8 +96,10 @@ M.compile = ce.async.void(function(opts, live)
       vim.cmd("redraw")
     end
 
+    scheduler()
+
     -- Choose compiler options
-    args.flags = vim_input({
+    args.flags = ui_input({
       prompt = "Select compiler options> ",
       default = conf.compiler_flags,
     })
@@ -104,7 +107,7 @@ M.compile = ce.async.void(function(opts, live)
     args.compiler = compiler
   end
 
-  ce.async.scheduler()
+  scheduler()
 
   args.lang = compiler.lang
 
@@ -126,7 +129,10 @@ M.compile = ce.async.void(function(opts, live)
   end
 
   -- Compile
+
   local body = ce.rest.create_compile_body(args)
+
+  ce.util.start_spinner("Compiling")
   local response
   ok, response = pcall(ce.rest.compile_post, compiler.id, body)
 
@@ -137,8 +143,11 @@ M.compile = ce.async.void(function(opts, live)
     response.asm
   )
 
+  scheduler()
+  ce.util.stop_spinner()
   local asm_bufnr =
     ce.util.create_window_buffer(source_bufnr, compiler.id, opts.bang)
+
   api.nvim_buf_clear_namespace(asm_bufnr, -1, 0, -1)
 
   api.nvim_set_option_value("modifiable", true, { buf = asm_bufnr })
@@ -180,7 +189,12 @@ M.compile = ce.async.void(function(opts, live)
     {}
   )
   api.nvim_buf_create_user_command(asm_bufnr, "CEGotoLabel", M.goto_label, {})
-end)
+end
+
+M.compile = function(opts, live)
+  async.run(compile, opts, live)
+end
+
 
 M.open_website = function()
   local cmd
@@ -209,10 +223,10 @@ M.open_website = function()
   vim.cmd(table.concat({ "silent", cmd, url }, " "))
 end
 
-M.add_library = ce.async.void(function()
-  local vim_select = get_select()
+local add_library = function()
   local lang_list = ce.rest.languages_get()
 
+  scheduler()
   -- Infer language based on extension and prompt user.
   local extension = "." .. fn.expand("%:e")
 
@@ -234,7 +248,7 @@ M.add_library = ce.async.void(function()
     lang = possible_langs[1]
   else
     -- Choose language
-    lang = vim_select(possible_langs, {
+    lang = ui_select(possible_langs, {
       prompt = "Select language> ",
       format_item = function(item) return item.name end,
     })
@@ -249,8 +263,9 @@ M.add_library = ce.async.void(function()
     return
   end
 
+  scheduler()
   -- Choose library
-  local lib = vim_select(libs, {
+  local lib = ui_select(libs, {
     prompt = "Select library> ",
     format_item = function(item) return item.name end,
   })
@@ -259,7 +274,7 @@ M.add_library = ce.async.void(function()
   vim.cmd("redraw")
 
   -- Choose version
-  local version = vim_select(lib.versions, {
+  local version = ui_select(lib.versions, {
     prompt = "Select library version> ",
     format_item = function(item) return item.version end,
   })
@@ -275,17 +290,20 @@ M.add_library = ce.async.void(function()
   )
 
   ce.alert.info("Added library %s version %s", lib.name, version.version)
-end)
+end
 
-M.format = ce.async.void(function()
-  local vim_select = get_select()
+M.add_library = function()
+  async.run(add_library)
+end
+
+local format = function()
   -- Get contents of current buffer
   local buf_contents = api.nvim_buf_get_lines(0, 0, -1, false)
   local source = table.concat(buf_contents, "\n")
 
   -- Select formatter
   local formatters = ce.rest.formatters_get()
-  local formatter = vim_select(formatters, {
+  local formatter = ui_select(formatters, {
     prompt = "Select formatter> ",
     format_item = function(item) return item.name end,
   })
@@ -294,7 +312,7 @@ M.format = ce.async.void(function()
 
   local style = formatter.styles[1] or "__DefaultStyle"
   if #formatter.styles > 0 then
-    style = vim_select(formatter.styles, {
+    style = ui_select(formatter.styles, {
       prompt = "Select formatter style> ",
       format_item = function(item) return item end,
     })
@@ -305,6 +323,8 @@ M.format = ce.async.void(function()
 
   local body = ce.rest.create_format_body(source, style)
   local out = ce.rest.format_post(formatter.type, body)
+
+  scheduler()
 
   if out.exit ~= 0 then
     ce.alert.error("Could not format code with %s", formatter.name)
@@ -318,11 +338,17 @@ M.format = ce.async.void(function()
   api.nvim_buf_set_lines(0, 0, -1, false, lines)
 
   ce.alert.info("Text formatted using %s and style %s", formatter.name, style)
-end)
+end
 
-M.show_tooltip = ce.async.void(function()
+M.format = function()
+  async.run(format)
+end
+
+local show_tooltip = function()
   local ok, response =
     pcall(ce.rest.tooltip_get, vim.b.arch, fn.expand("<cword>"))
+
+  scheduler()
   if not ok then
     ce.alert.error(response)
     return
@@ -333,7 +359,11 @@ M.show_tooltip = ce.async.void(function()
     close_events = { "CursorMoved" },
     border = "single",
   })
-end)
+end
+
+M.show_tooltip = function()
+  async.run(show_tooltip)
+end
 
 M.goto_label = function()
   local word_under_cursor = fn.expand("<cWORD>")
@@ -352,9 +382,9 @@ M.goto_label = function()
   api.nvim_win_set_cursor(0, { label, 0 })
 end
 
-M.load_example = ce.async.void(function()
-  local vim_select = get_select()
+local load_example = function()
   local examples = ce.rest.list_examples_get()
+  scheduler()
 
   local examples_by_lang = {}
   for _, example in ipairs(examples) do
@@ -368,7 +398,7 @@ M.load_example = ce.async.void(function()
   local langs = vim.tbl_keys(examples_by_lang)
   table.sort(langs)
 
-  local lang_id = vim_select(langs, {
+  local lang_id = ui_select(langs, {
     prompt = "Select language> ",
     format_item = function(item) return item end,
   })
@@ -376,11 +406,13 @@ M.load_example = ce.async.void(function()
   if not lang_id then return end
   vim.cmd("redraw")
 
-  local example = vim_select(examples_by_lang[lang_id], {
+  local example = ui_select(examples_by_lang[lang_id], {
     prompt = "Select example> ",
     format_item = function(item) return item.name end,
   })
   local response = ce.rest.load_example_get(lang_id, example.file)
+  scheduler()
+
   local lines = vim.split(response.file, "\n")
 
   langs = ce.rest.languages_get()
@@ -402,6 +434,10 @@ M.load_example = ce.async.void(function()
   else
     vim.filetype.match(bufname, 0)
   end
-end)
+end
+
+M.load_example = function()
+  async.run(load_example)
+end
 
 return M
