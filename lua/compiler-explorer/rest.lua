@@ -11,11 +11,7 @@ local get = function(url)
 end
 
 local post = function(url, req_body, spinner_text)
-  ce.util.start_spinner(spinner_text)
-  local ok, status, body = pcall(ce.http.post, url, req_body)
-  ce.util.stop_spinner()
-
-  if not ok then error(status) end
+  local status, body = ce.http.post(url, req_body)
 
   if status ~= 200 then
     error(("POST %s returned %d. %s"):format(url, status, body.error), 0)

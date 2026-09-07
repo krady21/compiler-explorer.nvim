@@ -1,14 +1,20 @@
 local ce = require("compiler-explorer.lazy")
 
 local json = vim.json
+local async = vim.async
 
 local M = {}
 
-M.get = ce.async.void(function(url)
+local scheduler = async.wrap(1, vim.schedule)
+local system = async.wrap(2, vim.system)
+local request = async.wrap(4, vim.net.request)
+
+M.get = function(url)
   local data = ce.cache.get()[url]
   if data ~= nil then return 200, data end
 
   local args = {
+    "curl",
     "-X",
     "GET",
     "-H",
@@ -18,11 +24,9 @@ M.get = ce.async.void(function(url)
     url,
   }
 
-  local ok, ret = pcall(ce.job.curl, args)
-  if not ok then error("curl executable not found") end
+  local ret = system(args, { text = true })
 
-  ce.async.scheduler()
-  if ret.exit ~= 0 then
+  if ret.code ~= 0 then
     error(
       ("curl error:\ncommand: %s\nexit_code: %d\nstderr: %s"):format(
         ret.cmd,
@@ -41,10 +45,11 @@ M.get = ce.async.void(function(url)
   local resp, status = json.decode(split[1]), tonumber(split[2])
   if status == 200 then ce.cache.get()[url] = resp end
   return status, resp
-end)
+end
 
-M.post = ce.async.void(function(url, body)
+M.post = function(url, body)
   local args = {
+    "curl",
     "-s",
     "-X",
     "POST",
@@ -58,11 +63,10 @@ M.post = ce.async.void(function(url, body)
     [[\n%{http_code}\n]],
     url,
   }
-  local ok, ret = pcall(ce.job.curl, args)
-  if not ok then error("curl executable not found") end
 
-  ce.async.scheduler()
-  if ret.exit ~= 0 then
+  local ret = system(args, { text = true })
+
+  if ret.code ~= 0 then
     error(
       ("curl error:\n command: %s \n exit_code %d\n stderr: %s"):format(
         ret.cmd,
@@ -80,6 +84,6 @@ M.post = ce.async.void(function(url, body)
   end
   local resp, status = json.decode(split[1]), tonumber(split[2])
   return status, resp
-end)
+end
 
 return M
